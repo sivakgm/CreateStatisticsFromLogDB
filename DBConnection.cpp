@@ -1,8 +1,10 @@
 /*
  * DBConnection.cpp
+
  *
  *  Created on: Nov 5, 2014
  *      Author: sivaprakash
+ *
  */
 
 #include "DBConnection.h"
@@ -20,8 +22,8 @@ void DBConnection::dbConnOpen(string host,string port,string user,string pass,st
 
 void DBConnection::createStatTableName()
 {
-	this->tableNameAcc = "ud_acc"+timeAndDate();
-	this->tableNameDen = "ud_den"+timeAndDate();
+	this->tableNameAcc = "ud_acc_"+timeAndDate();
+	this->tableNameDen = "ud_den_"+timeAndDate();
 	this->createTableIfNotExist();
 	this->setPstmt();
 	return;
@@ -44,12 +46,33 @@ void DBConnection::setPstmt()
 	this->upPstmtAcc=this->conn->prepareStatement(query);
 
 
-	string query = "insert into " + this->tableNameDen +"(user,domain,connection) values(?,?,?)";
+	query = "insert into " + this->tableNameDen +"(user,domain,connection) values(?,?,?)";
 	this->insPstmtDen=this->conn->prepareStatement(query);
 
 	query = "update " + this->tableNameDen + " set connection=? where user=? and domain=?;";
 	this->upPstmtDen=this->conn->prepareStatement(query);
+}
 
+void DBConnection::setReadPstmt(int a,string tableName,string user,string domain)
+{
+	string query;
+
+	if(a == 1)
+	{
+		query = "select * from " + tableName +";";
+	}
+	else
+	{
+		query = "select * from " + tableName +" where user=? and domain=?;";
+	}
+
+	this->readpstmt = this->conn->prepareStatement(query);
+
+	if(a != 1 )
+	{
+		this->readpstmt->setString(1,user);
+		this->readpstmt->setString(2,domain);
+	}
 
 }
 
@@ -61,41 +84,51 @@ string timeAndDate()
 	return date;
 }
 
-void DBConnection::insertIntoTable(RowData *rowData)
+void DBConnection::insertIntoTableAcc(RowData *rowData)
 {
-    this->insPstmt->setString(1,rowData->user);
-    this->insPstmt->setString(2,rowData->domain);
-    this->insPstmt->setDouble(3,rowData->size);
-    this->insPstmt->setInt(4,rowData->connection);
-    this->insPstmt->setDouble(5,rowData->hit);
-    this->insPstmt->setDouble(6,rowData->miss);
-    this->insPstmt->executeUpdate();
+    this->insPstmtAcc->setString(1,rowData->user);
+    this->insPstmtAcc->setString(2,rowData->domain);
+    this->insPstmtAcc->setDouble(3,rowData->size);
+    this->insPstmtAcc->setInt(4,rowData->connection);
+    this->insPstmtAcc->setDouble(5,rowData->hit);
+    this->insPstmtAcc->setDouble(6,rowData->miss);
+    this->insPstmtAcc->executeUpdate();
+}
+
+void DBConnection::updateTableAcc(RowData *rowData)
+{
+    this->upPstmtAcc->setDouble(1,rowData->size);
+    this->upPstmtAcc->setInt(2,rowData->connection);
+    this->upPstmtAcc->setDouble(3,rowData->hit);
+    this->upPstmtAcc->setDouble(4,rowData->miss);
+    this->upPstmtAcc->setString(5,rowData->user);
+    this->upPstmtAcc->setString(6,rowData->domain);
+    this->upPstmtAcc->executeUpdate();
     return;
 }
 
-void DBConnection::readTable()
+void DBConnection::insertIntoTableDen(RowData *rowData)
 {
-    cout<<"Open Database Connection\n";
-    string qurey = "select * from " + this->tableName ;
-    this->readpstmt = this->conn->prepareStatement(qurey);
+    this->insPstmtDen->setString(1,rowData->user);
+    this->insPstmtDen->setString(2,rowData->domain);
+    this->insPstmtDen->setInt(3,rowData->connection);
+    this->insPstmtDen->executeUpdate();
+    return;
+}
+
+void DBConnection::updateTableDen(RowData *rowData)
+{
+    this->upPstmtDen->setInt(1,rowData->connection);
+    this->upPstmtDen->setString(2,rowData->user);
+    this->upPstmtDen->setString(3,rowData->domain);
+    this->upPstmtDen->executeUpdate();
+    return;
+}
+
+void DBConnection::readTable(int a,string tableName,string user,string domain)
+{
+	this->setReadPstmt(a,tableName,user,domain);
     this->res = this->readpstmt->executeQuery();
     return;
-}
-
-void DBConnection::updateTable(RowData *rowData)
-{
-    this->upPstmt->setDouble(1,rowData->size);
-    this->upPstmt->setInt(2,rowData->connection);
-    this->upPstmt->setDouble(3,rowData->hit);
-    this->upPstmt->setDouble(4,rowData->miss);
-    this->upPstmt->setString(5,rowData->user);
-    this->upPstmt->setString(6,rowData->domain);
-    this->upPstmt->executeUpdate();
-    return;
-}
-
-void DBConnection::executePstmt(PreparedStatement *pstmt)
-{
-
 }
 

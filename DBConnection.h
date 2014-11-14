@@ -34,13 +34,11 @@ using namespace sql;
 class DBConnection
 {
 public:
-	//DBConnection();
-	//virtual ~DBConnection();
 
 	Connection *conn;
 	PreparedStatement *insPstmtAcc,*insPstmtDen;
 	PreparedStatement *upPstmtAcc,*upPstmtDen;
-	PreparedStatement *readpstmtAcc,*readpstmtDen;
+	PreparedStatement *readpstmt;
 	Statement *stmt;
 	ResultSet *res;
 
@@ -51,15 +49,15 @@ public:
 	void dbConnOpen(string host,string port,string user,string pass,string schema);
 
 	void setPstmt();
-	void executePstmt(PreparedStatement *pstmt);
-	void insertIntoTable(RowData *rowData);
-	void updateTable(RowData *rowData);
-	void readTable();
+	void setReadPstmt(int a,string tableName,string user,string domain);
+	void insertIntoTableAcc(RowData *rowData);
+	void updateTableAcc(RowData *rowData);
+	void insertIntoTableDen(RowData *rowData);
+	void updateTableDen(RowData *rowData);
+	void readTable(int a,string tableName,string user,string domain);
 
 	void createStatTableName();
 	bool createTableIfNotExist();
-
-
 
 };
 

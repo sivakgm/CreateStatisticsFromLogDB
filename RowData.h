@@ -11,13 +11,22 @@
 
 #include <string>
 
+#include <cppconn/statement.h>
+#include <cppconn/resultset.h>
+#include <cppconn/prepared_statement.h>
+#include <cppconn/exception.h>
+
+#include <boost/lexical_cast.hpp>
+
 class DBConnection;
 
 using namespace std;
+using namespace sql;
 
 
 class RowData {
 public:
+
 	string user;
 	string domain;
 	float size;
@@ -25,14 +34,22 @@ public:
 	float hit;
 	float miss;
 	int priority;
+	int isInTable;
 
-	//RowData();
-	//virtual ~RowData();
-
+	RowData();
 };
 
+void setObjPriority();
+void createNewObj();
+void updateObjFromTable(int pointObj,ResultSet *res);
+void emptyTheObj(int pointObj);
+void insertLeastUsedObjIntoTable(int pointObj,DBConnection *statLog);
+int getLeastObjPriority();
 void createStatistics(DBConnection *squidLog);
 void readResSet(DBConnection *logDB);
 string parseURLtoDomain(string url);
+int checkDataInOBJ(int count,string user,string domain);
+void updateDataInObj(RowData *rowdata,ResultSet *res);
+int checkDataInTable(DBConnection *statLog,string tableName,string user,string domain);
 
 #endif /* ROWDATA_H_ */

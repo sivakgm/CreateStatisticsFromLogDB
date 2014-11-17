@@ -24,7 +24,7 @@ RowData::RowData(void)
 	miss = 0.0;
 	hit = 0.0;
 	size = 0.0;
-	priority = 1;
+	priority = 0;
 	isInTable = 0;
 }
 
@@ -47,6 +47,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 			if(pointObj != NULL)
 			{
 				updateDataInObj(rowDataAcc[pointObj],squidLog->res);
+				cout<<"2";
 			}
 			else
 			{
@@ -54,11 +55,12 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				{
 					createNewObj();
 					updateDataInObj(rowDataAcc[NoACCOBJ-1],squidLog->res);
+					cout<<"1";
 				}
 				else
 				{
 					pointObj = getLeastObjPriority();
-					insertLeastUsedObjIntoTable(pointObj,statLog);
+					insertObjIntoTable(pointObj,statLog);
 					emptyTheObj(pointObj);
 
 					isnewLogInTable = checkDataInTable(statLog,statLog->tableNameAcc,user,domain);
@@ -73,22 +75,38 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					}
 				}
 			}
-
-			RowData *rowData1 = new RowData();
-			rowData1->domain = parseURLtoDomain(squidLog->res->getString(11));
-			cout<<rowData1->domain;
 		}
 	}
 }
 
-void setObjPriority()
+void insertAllObjDataIntoTable(DBConnection *statLog)
 {
+	for(int i=0;i<NoACCOBJ;i++)
+		{
+		insertObjIntoTable(i,statLog);
+		}
+}
 
+void setObjPriority(int lim)
+{
+	if(lim == 0)
+	{
+		lim = NoACCOBJ;
+	}
+	for(int i=0;i<lim;i++)
+	{
+		rowDataAcc[i]->priority = rowDataAcc[i]->priority + 1;
+	}
 }
 
 int getLeastObjPriority()
 {
-	return 1;
+	for(int i=0;i<NoACCOBJ;i++)
+	{
+		if(rowDataAcc[i]->priority == NoACCOBJ )
+			return i;
+	}
+	return NULL;
 }
 
 
@@ -107,7 +125,6 @@ void emptyTheObj(int pointObj)
 		rowDataAcc[pointObj]->miss = 0.0;
 		rowDataAcc[pointObj]->hit = 0.0;
 		rowDataAcc[pointObj]->size = 0.0;
-		rowDataAcc[pointObj]->priority = 1;
 		rowDataAcc[pointObj]->isInTable = 0;
 }
 
@@ -123,7 +140,7 @@ void updateObjFromTable(int pointObj,ResultSet *res)
 	rowDataAcc[pointObj]->isInTable = 1;
 }
 
-void insertLeastUsedObjIntoTable(int pointObj,DBConnection *statLog)
+void insertObjIntoTable(int pointObj,DBConnection *statLog)
 {
 	if(rowDataAcc[pointObj]->isInTable == 1)
 	{
@@ -137,26 +154,28 @@ void insertLeastUsedObjIntoTable(int pointObj,DBConnection *statLog)
 
 void updateDataInObj(RowData *rowdata,ResultSet *res)
 {
-	rowdata->user = res->getString(7);
+	int lim = rowdata->priority;
+	rowdata->user = res->getString(6);
 	rowdata->domain = parseURLtoDomain(res->getString(11));
 	rowdata->connection = rowdata->connection + 1;
 	rowdata->size = rowdata->size + res->getDouble(9);
-	rowdata->priority = 1;
+	rowdata->priority = 0;
 	if(res->getString(7) == "TCP_HIT" || res->getString(7) == "TCP_MEM_HIT" || res->getString(7) == "UDP_HIT" || res->getString(7) == "UDP_HIT_OBJ")
 	{
-		rowdata->hit = 0.0;
+		rowdata->hit = rowdata->hit + res->getDouble(9);
 	}
 	else
 	{
-		rowdata->miss = 0.0;
+		rowdata->miss = rowdata->miss + res->getDouble(9) ;
 	}
-	setObjPriority();
+	setObjPriority(lim);
 	return;
 }
 
 int checkDataInTable(DBConnection *statLog,string tableName,string user,string domain)
 {
-	statLog->readTable(0,tableName,user,domain);
+	statLog->setReadPstmt(0,tableName,user,domain);
+	statLog->readTable();
 	if(statLog->res->next())
 	{
 		return 1;
@@ -170,7 +189,7 @@ int checkDataInOBJ(int count,string user,string domain)
 	{
 		if(rowDataAcc[i]->user == user && rowDataAcc[i]->domain == domain)
 		{
-			return rowDataAcc[i];
+			return i;
 		}
 	}
 

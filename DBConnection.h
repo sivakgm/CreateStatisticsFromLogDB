@@ -54,7 +54,7 @@ public:
 	void updateTableAcc(RowData *rowData);
 	void insertIntoTableDen(RowData *rowData);
 	void updateTableDen(RowData *rowData);
-	void readTable(int a,string tableName,string user,string domain);
+	void readTable();
 
 	void createStatTableName();
 	bool createTableIfNotExist();

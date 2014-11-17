@@ -39,13 +39,14 @@ public:
 	RowData();
 };
 
-void setObjPriority();
+void insertAllObjDataIntoTable(DBConnection *statLog);
+void setObjPriority(int lim);
 void createNewObj();
 void updateObjFromTable(int pointObj,ResultSet *res);
 void emptyTheObj(int pointObj);
-void insertLeastUsedObjIntoTable(int pointObj,DBConnection *statLog);
+void insertObjIntoTable(int pointObj,DBConnection *statLog);
 int getLeastObjPriority();
-void createStatistics(DBConnection *squidLog);
+void createStatistics(DBConnection *squidLog,DBConnection *statLog);
 void readResSet(DBConnection *logDB);
 string parseURLtoDomain(string url);
 int checkDataInOBJ(int count,string user,string domain);

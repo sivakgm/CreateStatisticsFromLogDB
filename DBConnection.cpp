@@ -125,9 +125,8 @@ void DBConnection::updateTableDen(RowData *rowData)
     return;
 }
 
-void DBConnection::readTable(int a,string tableName,string user,string domain)
+void DBConnection::readTable()
 {
-	this->setReadPstmt(a,tableName,user,domain);
     this->res = this->readpstmt->executeQuery();
     return;
 }

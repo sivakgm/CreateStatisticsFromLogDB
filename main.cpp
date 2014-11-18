@@ -25,7 +25,7 @@ int main()
 
 	DBConnection *statLog = new DBConnection();
 	statLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
-	statLog->createStatTableName();
+
 
 	createStatistics(squidLog,statLog);
 

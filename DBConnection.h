@@ -56,7 +56,7 @@ public:
 	void updateTableDen(RowData *rowData);
 	void readTable();
 
-	void createStatTableName();
+	void createStatTableName(string tableName);
 	bool createTableIfNotExist();
 
 };

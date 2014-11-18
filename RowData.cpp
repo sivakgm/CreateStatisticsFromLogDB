@@ -14,7 +14,7 @@ const int MAXDENIEDOBJ = 5;
 int NoDENOBJ;
 
 RowData *rowDataAcc[MAXACCESSOBJ];
-RowData *rowDataDen[MAXDENIEDOBJ];
+RowDataDen *rowDataDen[MAXDENIEDOBJ];
 
 RowData::RowData(void)
 {
@@ -24,6 +24,16 @@ RowData::RowData(void)
 	miss = 0.0;
 	hit = 0.0;
 	size = 0.0;
+	respone_time = 0.0;
+	priority = 0;
+	isInTable = 0;
+}
+
+RowDataDen::RowDataDen(void)
+{
+	user = "";
+	domain ="";
+	connection = "";
 	priority = 0;
 	isInTable = 0;
 }
@@ -34,8 +44,24 @@ RowData::RowData(void)
 
 void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 {
+	string logDate = "";
 	while(squidLog->res->next())
 	{
+		if(squidLog->res->getString(3) != logDate )
+		{
+			string temp;
+			logDate = squidLog->res->getString(3);
+			for(int x=0;x<logDate.length();x++)
+			{
+				if(temp[x] == '-')
+				{
+					temp[x]='_';
+				}
+			}
+
+		statLog->createStatTableName(temp);
+		}
+
 		int pointObj,isnewLogInTable;
 		string user=squidLog->res->getString(6);
 		string domain=parseURLtoDomain(squidLog->res->getString(11));
@@ -44,39 +70,44 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 		{
 			pointObj = checkDataInOBJ(NoACCOBJ,user,domain);
 
-			if(pointObj != NULL)
+			if(pointObj != -1)
 			{
 				updateDataInObj(rowDataAcc[pointObj],squidLog->res);
-				cout<<"2";
 			}
 			else
 			{
 				if(NoACCOBJ<MAXACCESSOBJ)
 				{
 					createNewObj();
-					updateDataInObj(rowDataAcc[NoACCOBJ-1],squidLog->res);
-					cout<<"1";
+					pointObj = NoACCOBJ -1;
 				}
 				else
 				{
 					pointObj = getLeastObjPriority();
 					insertObjIntoTable(pointObj,statLog);
 					emptyTheObj(pointObj);
+				}
 
-					isnewLogInTable = checkDataInTable(statLog,statLog->tableNameAcc,user,domain);
-					if(isnewLogInTable == 1)
-					{
-						updateObjFromTable(pointObj,statLog->res);
-						updateDataInObj(rowDataAcc[pointObj],squidLog->res);
-					}
-					else
-					{
-						updateDataInObj(rowDataAcc[pointObj],squidLog->res);
-					}
+				isnewLogInTable = checkDataInTable(statLog,statLog->tableNameAcc,user,domain);
+
+				if(isnewLogInTable == 1)
+				{
+					updateObjFromTable(pointObj,statLog->res);
+					updateDataInObj(rowDataAcc[pointObj],squidLog->res);
+				}
+				else
+				{
+					updateDataInObj(rowDataAcc[pointObj],squidLog->res);
 				}
 			}
 		}
+		else
+		{
+			pointObj = checkDataInDenOBJ(NoDENOBJ,user,domain);
+
+		}
 	}
+
 }
 
 void insertAllObjDataIntoTable(DBConnection *statLog)
@@ -106,7 +137,7 @@ int getLeastObjPriority()
 		if(rowDataAcc[i]->priority == NoACCOBJ )
 			return i;
 	}
-	return NULL;
+	return -1;
 }
 
 
@@ -126,6 +157,7 @@ void emptyTheObj(int pointObj)
 		rowDataAcc[pointObj]->hit = 0.0;
 		rowDataAcc[pointObj]->size = 0.0;
 		rowDataAcc[pointObj]->isInTable = 0;
+		rowDataAcc[pointObj]->respone_time = 0;
 }
 
 void updateObjFromTable(int pointObj,ResultSet *res)
@@ -136,7 +168,7 @@ void updateObjFromTable(int pointObj,ResultSet *res)
 	rowDataAcc[pointObj]->miss = res->getDouble(6);
 	rowDataAcc[pointObj]->hit =  res->getDouble(5);
 	rowDataAcc[pointObj]->size = res->getDouble(3);
-	rowDataAcc[pointObj]->priority = 1;
+	rowDataAcc[pointObj]->respone_time = res->getDouble(7);
 	rowDataAcc[pointObj]->isInTable = 1;
 }
 
@@ -159,6 +191,7 @@ void updateDataInObj(RowData *rowdata,ResultSet *res)
 	rowdata->domain = parseURLtoDomain(res->getString(11));
 	rowdata->connection = rowdata->connection + 1;
 	rowdata->size = rowdata->size + res->getDouble(9);
+	rowdata->respone_time = rowdata->respone_time + res->getDouble(5);
 	rowdata->priority = 0;
 	if(res->getString(7) == "TCP_HIT" || res->getString(7) == "TCP_MEM_HIT" || res->getString(7) == "UDP_HIT" || res->getString(7) == "UDP_HIT_OBJ")
 	{
@@ -168,6 +201,7 @@ void updateDataInObj(RowData *rowdata,ResultSet *res)
 	{
 		rowdata->miss = rowdata->miss + res->getDouble(9) ;
 	}
+
 	setObjPriority(lim);
 	return;
 }
@@ -180,7 +214,7 @@ int checkDataInTable(DBConnection *statLog,string tableName,string user,string d
 	{
 		return 1;
 	}
-	return NULL;
+	return -1;
 }
 
 int checkDataInOBJ(int count,string user,string domain)
@@ -192,8 +226,7 @@ int checkDataInOBJ(int count,string user,string domain)
 			return i;
 		}
 	}
-
-	return NULL;
+	return -1;
 }
 
 string parseURLtoDomain(string url)

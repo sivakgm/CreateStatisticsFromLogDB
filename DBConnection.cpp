@@ -20,10 +20,10 @@ void DBConnection::dbConnOpen(string host,string port,string user,string pass,st
 	return;
 }
 
-void DBConnection::createStatTableName()
+void DBConnection::createStatTableName(string tableName)
 {
-	this->tableNameAcc = "ud_acc_"+timeAndDate();
-	this->tableNameDen = "ud_den_"+timeAndDate();
+	this->tableNameAcc = "ud_acc_"+tableName;
+	this->tableNameDen = "ud_den_"+tableName;
 	this->createTableIfNotExist();
 	this->setPstmt();
 	return;
@@ -32,17 +32,17 @@ void DBConnection::createStatTableName()
 bool DBConnection::createTableIfNotExist()
 {
 	this->stmt=this->conn->createStatement();
-	this->stmt->execute("create table if not exists " + this->tableNameAcc + "(user varchar(12), domain varchar(100), size double, connection int, hit float, miss float);");
+	this->stmt->execute("create table if not exists " + this->tableNameAcc + "(user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
 	return this->stmt->execute("create table if not exists " + this->tableNameDen + "(user varchar(12), domain varchar(100), connection int);");
 }
 
 void DBConnection::setPstmt()
 {
 
-	string query = "insert into " + this->tableNameAcc +"(user,domain,size,connection,hit,miss) values(?,?,?,?,?,?)";
+	string query = "insert into " + this->tableNameAcc +"(user,domain,size,connection,hit,miss,reponse_time) values(?,?,?,?,?,?,?)";
 	this->insPstmtAcc=this->conn->prepareStatement(query);
 
-	query = "update " + this->tableNameAcc + " set size=?,connection=?,hit=?,miss=? where user=? and domain=?;";
+	query = "update " + this->tableNameAcc + " set size=?,connection=?,hit=?,miss=?,reponse_time=? where user=? and domain=?;";
 	this->upPstmtAcc=this->conn->prepareStatement(query);
 
 
@@ -92,6 +92,7 @@ void DBConnection::insertIntoTableAcc(RowData *rowData)
     this->insPstmtAcc->setInt(4,rowData->connection);
     this->insPstmtAcc->setDouble(5,rowData->hit);
     this->insPstmtAcc->setDouble(6,rowData->miss);
+    this->insPstmtAcc->setDouble(7,rowData->respone_time);
     this->insPstmtAcc->executeUpdate();
 }
 
@@ -101,8 +102,10 @@ void DBConnection::updateTableAcc(RowData *rowData)
     this->upPstmtAcc->setInt(2,rowData->connection);
     this->upPstmtAcc->setDouble(3,rowData->hit);
     this->upPstmtAcc->setDouble(4,rowData->miss);
-    this->upPstmtAcc->setString(5,rowData->user);
-    this->upPstmtAcc->setString(6,rowData->domain);
+    this->upPstmtAcc->setDouble(5,rowData->respone_time);
+    this->upPstmtAcc->setString(6,rowData->user);
+    this->upPstmtAcc->setString(7,rowData->domain);
+
     this->upPstmtAcc->executeUpdate();
     return;
 }

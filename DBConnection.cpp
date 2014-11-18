@@ -8,15 +8,18 @@
  */
 
 #include "DBConnection.h"
+#include "RowDataDenied.h"
 #include "RowData.h"
+
 
 void DBConnection::dbConnOpen(string host,string port,string user,string pass,string schema)
 {
-	cout<<"Open Database Connection\n";
+	cout<<"open db\n";
 	Driver *driver = get_driver_instance();
-	string add = "tcp://"+host+":"+port;
-	this->conn = driver->connect(add,user,pass);
+	string addre = "tcp://"+host+":"+port;
+	this->conn = driver->connect(addre,user,pass);
 	this->conn->setSchema(schema);
+	cout<<"end db\n";
 	return;
 }
 
@@ -24,16 +27,22 @@ void DBConnection::createStatTableName(string tableName)
 {
 	this->tableNameAcc = "ud_acc_"+tableName;
 	this->tableNameDen = "ud_den_"+tableName;
+	this->tableNameAccTime = "at_acc_" + tableName;
+	this->tableNameDenTime= "at_den_" + tableName;
 	this->createTableIfNotExist();
 	this->setPstmt();
 	return;
 }
 
-bool DBConnection::createTableIfNotExist()
+void DBConnection::createTableIfNotExist()
 {
 	this->stmt=this->conn->createStatement();
-	this->stmt->execute("create table if not exists " + this->tableNameAcc + "(user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
-	return this->stmt->execute("create table if not exists " + this->tableNameDen + "(user varchar(12), domain varchar(100), connection int);");
+	cout<<"create table\n";
+	this->stmt->execute("create table if not exists " + this->tableNameAcc + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
+	this->stmt->execute("create table if not exists " + this->tableNameDen + " (user varchar(12), domain varchar(100), connection int);");
+	this->stmt->execute("create table if not exists " + this->tableNameAccTime + " (user varchar(12), domain varchar(100), accTime varchar(15));");
+	this->stmt->execute("create table if not exists " + this->tableNameDenTime + " (user varchar(12), domain varchar(100), accTime varchar(15));");
+	cout<<"end create table\n";
 }
 
 void DBConnection::setPstmt()
@@ -45,19 +54,24 @@ void DBConnection::setPstmt()
 	query = "update " + this->tableNameAcc + " set size=?,connection=?,hit=?,miss=?,reponse_time=? where user=? and domain=?;";
 	this->upPstmtAcc=this->conn->prepareStatement(query);
 
-
 	query = "insert into " + this->tableNameDen +"(user,domain,connection) values(?,?,?)";
 	this->insPstmtDen=this->conn->prepareStatement(query);
 
 	query = "update " + this->tableNameDen + " set connection=? where user=? and domain=?;";
 	this->upPstmtDen=this->conn->prepareStatement(query);
+
+	query = "insert into " + this->tableNameAccTime +"(user,domain,accTime) values(?,?,?);";
+	this->insPstmtAccTime=this->conn->prepareStatement(query);
+
+	query = "insert into " + this->tableNameDenTime +"(user,domain,accTime) values(?,?,?);";
+	this->insPstmtDenTime=this->conn->prepareStatement(query);
 }
 
-void DBConnection::setReadPstmt(int a,string tableName,string user,string domain)
+void DBConnection::setReadPstmt(int flag,string tableName,string user,string domain)
 {
 	string query;
 
-	if(a == 1)
+	if(flag == 1)
 	{
 		query = "select * from " + tableName +";";
 	}
@@ -68,7 +82,7 @@ void DBConnection::setReadPstmt(int a,string tableName,string user,string domain
 
 	this->readpstmt = this->conn->prepareStatement(query);
 
-	if(a != 1 )
+	if(flag != 1 )
 	{
 		this->readpstmt->setString(1,user);
 		this->readpstmt->setString(2,domain);
@@ -83,6 +97,23 @@ string timeAndDate()
 	string date = boost::lexical_cast<std::string>((ltm->tm_mday < 10 ?"0":""))+boost::lexical_cast<std::string>(ltm->tm_mday)+"_"+boost::lexical_cast<std::string>(1 + ltm->tm_mon < 10 ?"0":"")+boost::lexical_cast<std::string>(1 + ltm->tm_mon)+"_"+boost::lexical_cast<std::string>(1900 + ltm->tm_year);
 	return date;
 }
+
+void DBConnection::insertIntoTableAccTime(RowData *rowData,string acctime)
+{
+	this->insPstmtAccTime->setString(1,rowData->user);
+	this->insPstmtAccTime->setString(2,rowData->domain);
+	this->insPstmtAccTime->setString(3,acctime);
+    this->insPstmtAccTime->executeUpdate();
+}
+
+void DBConnection::insertIntoTableDenTime(RowDataDenied *rowData,string acctime)
+{
+    this->insPstmtDenTime->setString(1,rowData->user);
+    this->insPstmtDenTime->setString(2,rowData->domain);
+    this->insPstmtDenTime->setString(3,acctime);
+    this->insPstmtDenTime->executeUpdate();
+}
+
 
 void DBConnection::insertIntoTableAcc(RowData *rowData)
 {
@@ -110,7 +141,7 @@ void DBConnection::updateTableAcc(RowData *rowData)
     return;
 }
 
-void DBConnection::insertIntoTableDen(RowData *rowData)
+void DBConnection::insertIntoTableDen(RowDataDenied *rowData)
 {
     this->insPstmtDen->setString(1,rowData->user);
     this->insPstmtDen->setString(2,rowData->domain);
@@ -119,7 +150,7 @@ void DBConnection::insertIntoTableDen(RowData *rowData)
     return;
 }
 
-void DBConnection::updateTableDen(RowData *rowData)
+void DBConnection::updateTableDen(RowDataDenied *rowData)
 {
     this->upPstmtDen->setInt(1,rowData->connection);
     this->upPstmtDen->setString(2,rowData->user);
@@ -134,3 +165,28 @@ void DBConnection::readTable()
     return;
 }
 
+string parseURLtoDomain(string url)
+{
+		string delimiters = "/";
+		size_t current = 0;
+		size_t next = 0;
+		string domain = url;
+
+		next = url.find_first_of( delimiters, current );
+
+		if(next != string::npos)
+		{
+			if( url[next + 1] == '/')
+			{
+				current = next + 2;
+				next = url.find_first_of( delimiters, current );
+				domain = url.substr( current, next - current );
+			}
+			else
+			{
+				domain = url.substr( current, next );
+			}
+		}
+
+	return domain;
+}

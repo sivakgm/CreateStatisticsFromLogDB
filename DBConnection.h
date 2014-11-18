@@ -26,6 +26,7 @@
 #include <sys/time.h>
 
 class RowData;
+class RowDataDenied;
 
 using namespace std;
 using namespace sql;
@@ -36,14 +37,14 @@ class DBConnection
 public:
 
 	Connection *conn;
-	PreparedStatement *insPstmtAcc,*insPstmtDen;
+	PreparedStatement *insPstmtAcc,*insPstmtDen,*insPstmtAccTime,*insPstmtDenTime;
 	PreparedStatement *upPstmtAcc,*upPstmtDen;
 	PreparedStatement *readpstmt;
 	Statement *stmt;
 	ResultSet *res;
 
 	string tableName;
-	string tableNameAcc,tableNameDen;
+	string tableNameAcc,tableNameDen,tableNameAccTime,tableNameDenTime;
 
 
 	void dbConnOpen(string host,string port,string user,string pass,string schema);
@@ -52,15 +53,18 @@ public:
 	void setReadPstmt(int a,string tableName,string user,string domain);
 	void insertIntoTableAcc(RowData *rowData);
 	void updateTableAcc(RowData *rowData);
-	void insertIntoTableDen(RowData *rowData);
-	void updateTableDen(RowData *rowData);
+	void insertIntoTableDen(RowDataDenied *rowData);
+	void updateTableDen(RowDataDenied *rowData);
+	void insertIntoTableAccTime(RowData *rowData,string time);
+	void insertIntoTableDenTime(RowDataDenied *rowData,string time);
 	void readTable();
 
 	void createStatTableName(string tableName);
-	bool createTableIfNotExist();
+	void createTableIfNotExist();
 
 };
 
+string parseURLtoDomain(string url);
 string timeAndDate();
 
 #endif /* DBCONNECTION_H_ */

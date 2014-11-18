@@ -8,13 +8,10 @@
 #include "RowData.h"
 #include "DBConnection.h"
 
-const int MAXACCESSOBJ = 15;
-int NoACCOBJ;
-const int MAXDENIEDOBJ = 5;
-int NoDENOBJ;
+extern const int MAXACCESSOBJ = 20;
+extern int NoACCOBJ;
 
-RowData *rowDataAcc[MAXACCESSOBJ];
-RowDataDen *rowDataDen[MAXDENIEDOBJ];
+extern RowData *rowDataAcc[MAXACCESSOBJ];
 
 RowData::RowData(void)
 {
@@ -29,93 +26,18 @@ RowData::RowData(void)
 	isInTable = 0;
 }
 
-RowDataDen::RowDataDen(void)
-{
-	user = "";
-	domain ="";
-	connection = "";
-	priority = 0;
-	isInTable = 0;
-}
+
 
 /*RowData::~RowData() {
 	// TODO Auto-generated destructor stub
 }*/
 
-void createStatistics(DBConnection *squidLog,DBConnection *statLog)
-{
-	string logDate = "";
-	while(squidLog->res->next())
-	{
-		if(squidLog->res->getString(3) != logDate )
-		{
-			string temp;
-			logDate = squidLog->res->getString(3);
-			for(int x=0;x<logDate.length();x++)
-			{
-				if(temp[x] == '-')
-				{
-					temp[x]='_';
-				}
-			}
-
-		statLog->createStatTableName(temp);
-		}
-
-		int pointObj,isnewLogInTable;
-		string user=squidLog->res->getString(6);
-		string domain=parseURLtoDomain(squidLog->res->getString(11));
-
-		if(squidLog->res->getString(7) != "TCP_DENIED")
-		{
-			pointObj = checkDataInOBJ(NoACCOBJ,user,domain);
-
-			if(pointObj != -1)
-			{
-				updateDataInObj(rowDataAcc[pointObj],squidLog->res);
-			}
-			else
-			{
-				if(NoACCOBJ<MAXACCESSOBJ)
-				{
-					createNewObj();
-					pointObj = NoACCOBJ -1;
-				}
-				else
-				{
-					pointObj = getLeastObjPriority();
-					insertObjIntoTable(pointObj,statLog);
-					emptyTheObj(pointObj);
-				}
-
-				isnewLogInTable = checkDataInTable(statLog,statLog->tableNameAcc,user,domain);
-
-				if(isnewLogInTable == 1)
-				{
-					updateObjFromTable(pointObj,statLog->res);
-					updateDataInObj(rowDataAcc[pointObj],squidLog->res);
-				}
-				else
-				{
-					updateDataInObj(rowDataAcc[pointObj],squidLog->res);
-				}
-			}
-		}
-		else
-		{
-			pointObj = checkDataInDenOBJ(NoDENOBJ,user,domain);
-
-		}
-	}
-
-}
-
 void insertAllObjDataIntoTable(DBConnection *statLog)
 {
 	for(int i=0;i<NoACCOBJ;i++)
-		{
+	{
 		insertObjIntoTable(i,statLog);
-		}
+	}
 }
 
 void setObjPriority(int lim)
@@ -140,11 +62,12 @@ int getLeastObjPriority()
 	return -1;
 }
 
-
 void createNewObj()
 {
 	rowDataAcc[NoACCOBJ] = new RowData();
+
 	NoACCOBJ++;
+	cout<<"created\n";
 	return;
 }
 
@@ -184,7 +107,7 @@ void insertObjIntoTable(int pointObj,DBConnection *statLog)
 	}
 }
 
-void updateDataInObj(RowData *rowdata,ResultSet *res)
+void updateDataInObj(DBConnection *statLog,RowData *rowdata,ResultSet *res)
 {
 	int lim = rowdata->priority;
 	rowdata->user = res->getString(6);
@@ -201,21 +124,11 @@ void updateDataInObj(RowData *rowdata,ResultSet *res)
 	{
 		rowdata->miss = rowdata->miss + res->getDouble(9) ;
 	}
-
+	statLog->insertIntoTableAccTime(rowdata,res->getString(4));
 	setObjPriority(lim);
 	return;
 }
 
-int checkDataInTable(DBConnection *statLog,string tableName,string user,string domain)
-{
-	statLog->setReadPstmt(0,tableName,user,domain);
-	statLog->readTable();
-	if(statLog->res->next())
-	{
-		return 1;
-	}
-	return -1;
-}
 
 int checkDataInOBJ(int count,string user,string domain)
 {
@@ -229,31 +142,6 @@ int checkDataInOBJ(int count,string user,string domain)
 	return -1;
 }
 
-string parseURLtoDomain(string url)
-{
-		string delimiters = "/";
-		size_t current = 0;
-		size_t next = 0;
-		string domain = url;
-
-		next = url.find_first_of( delimiters, current );
-
-		if(next != string::npos)
-		{
-			if( url[next + 1] == '/')
-			{
-				current = next + 2;
-				next = url.find_first_of( delimiters, current );
-				domain = url.substr( current, next - current );
-			}
-			else
-			{
-				domain = url.substr( current, next );
-			}
-		}
-
-	return domain;
-}
 
 void readResSet(DBConnection *logDB)
 {
@@ -272,4 +160,16 @@ void readResSet(DBConnection *logDB)
 
 	}
 	return;
+}
+
+
+int checkDataInTable(DBConnection *statLog,string tableName,string user,string domain)
+{
+	statLog->setReadPstmt(0,tableName,user,domain);
+	statLog->readTable();
+	if(statLog->res->next())
+	{
+		return 1;
+	}
+	return -1;
 }

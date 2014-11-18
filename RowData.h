@@ -40,17 +40,6 @@ public:
 	RowData();
 };
 
-class RowDataDen
-{
-public:
-
-	string user;
-	string domain;
-	int connection;
-	int priority;
-	int isInTable;
-	RowDataDen();
-};
 
 void insertAllObjDataIntoTable(DBConnection *statLog);
 void setObjPriority(int lim);
@@ -59,15 +48,10 @@ void updateObjFromTable(int pointObj,ResultSet *res);
 void emptyTheObj(int pointObj);
 void insertObjIntoTable(int pointObj,DBConnection *statLog);
 int getLeastObjPriority();
-void createStatistics(DBConnection *squidLog,DBConnection *statLog);
 void readResSet(DBConnection *logDB);
-string parseURLtoDomain(string url);
 int checkDataInOBJ(int count,string user,string domain);
-void updateDataInObj(RowData *rowdata,ResultSet *res);
+void updateDataInObj(DBConnection *statLog,RowData *rowdata,ResultSet *res);
 int checkDataInTable(DBConnection *statLog,string tableName,string user,string domain);
-
-void updateDataInDenObj(RowDataDen *rowDenData,ResultSet *res);
-int checkDataInDenOBJ();
 
 
 #endif /* ROWDATA_H_ */

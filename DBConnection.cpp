@@ -11,12 +11,20 @@
 #include "RowDataDenied.h"
 #include "RowData.h"
 
+void DBConnection::createDBIfNotExists(string schema)
+{
+	this->stmt=this->conn->createStatement();
+	this->stmt->execute("create database if not exists "+schema);
+	return;
+}
+
 
 void DBConnection::dbConnOpen(string host,string port,string user,string pass,string schema)
 {
 	Driver *driver = get_driver_instance();
 	string addre = "tcp://"+host+":"+port;
 	this->conn = driver->connect(addre,user,pass);
+	this->createDBIfNotExists(schema);
 	this->conn->setSchema(schema);
 	return;
 }

@@ -34,34 +34,18 @@ int main()
 	squidLog->setReadPstmt(1,squidLog->tableName,"","");
 	squidLog->readTable();
 
-
-	DBConnection *statLog = new DBConnection();
-	statLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
-
-
-
+	DBConnection *statLog = new DBConnection();;
 	createStatistics(squidLog,statLog);
 
-	insertAllObjDataIntoTable(statLog);
+	for(int i=0;i<NoACCOBJ;i++)
+	{
+		delete rowDataAcc[i];
+	}
+	for(int i=0;i<NoDENOBJ;i++)
+	{
+		delete rowDataDen[i];
+	}
 
-	insertAllDenObjDataIntoTable(statLog);
-
-	/*RowData *rowData = new RowData();
-	rowData->user="user2";
-	rowData->domain=".yahoo.com";
-	rowData->hit=18;
-	rowData->miss=18;
-	rowData->priority=18;
-	rowData->connection=18;
-	rowData->size=18;*/
-
-//	statLog->updateTableAcc(rowData);
-//	statLog->updateTableDen(rowData);
-//	statLog->insertIntoTableAcc(rowData);
-//	statLog->insertIntoTableDen(rowData);
-
-//	statLog->readTable(0,statLog->tableNameAcc,rowData->user,rowData->domain);
-//	readResSet(statLog);
 
 	cout<<"End Of program \n";
 	return 0;
@@ -69,7 +53,7 @@ int main()
 
 void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 {
-	string logDate = "";
+	string logDate = "",year="",month="";
 	string user;
 	string domain;
 	int pointObj,isnewLogInTable;
@@ -77,12 +61,10 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 	{
 		user=squidLog->res->getString(6);
 		domain=parseURLtoDomain(squidLog->res->getString(11));
-
-		cout<<user<<"\t"<<domain<<"\n";
+		//cout<<user<<"\t"<<domain<<"\n";
 
 		if(squidLog->res->getString(3) != logDate )
 		{
-			//cout<<squidLog->res->getString(3);
 			logDate = squidLog->res->getString(3);
 			string temp = logDate;
 			for(unsigned int x=0;x<temp.length();x++)
@@ -92,6 +74,18 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					temp[x]='_';
 				}
 			}
+
+		if(year != logDate.substr(6,4))
+		{
+			year=logDate.substr(6,4);
+			string dbName = "squidStatistics_"+year;
+			statLog->dbConnOpen("127.0.0.1","3306","root","simple",dbName);
+		}
+		if(month != logDate.substr(3,2))
+		{
+			month = logDate.substr(3,2);
+
+		}
 		statLog->createStatTableName(temp);
 		}
 
@@ -170,5 +164,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 		}
 	}
 
+	insertAllObjDataIntoTable(statLog);
+	insertAllDenObjDataIntoTable(statLog);
 }
 

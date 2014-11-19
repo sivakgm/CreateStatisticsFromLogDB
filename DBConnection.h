@@ -61,6 +61,7 @@ public:
 
 	void createStatTableName(string tableName);
 	void createTableIfNotExist();
+	void createDBIfNotExists(string schema);
 
 };
 

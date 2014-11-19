@@ -31,19 +31,20 @@ int main()
 	DBConnection *squidLog = new DBConnection();
 	squidLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
 	squidLog->tableName = "access_log";
-	cout<<"1\n";
 	squidLog->setReadPstmt(1,squidLog->tableName,"","");
 	squidLog->readTable();
 
 
 	DBConnection *statLog = new DBConnection();
 	statLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
-	cout<<"4\n";
+
 
 
 	createStatistics(squidLog,statLog);
 
 	insertAllObjDataIntoTable(statLog);
+
+	insertAllDenObjDataIntoTable(statLog);
 
 	/*RowData *rowData = new RowData();
 	rowData->user="user2";
@@ -62,7 +63,7 @@ int main()
 //	statLog->readTable(0,statLog->tableNameAcc,rowData->user,rowData->domain);
 //	readResSet(statLog);
 
-	cout<<"\nProgram designed by Karthik\n";
+	cout<<"End Of program \n";
 	return 0;
 }
 
@@ -72,10 +73,8 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 	string user;
 	string domain;
 	int pointObj,isnewLogInTable;
-	cout<<"5"<<"\n";
 	while(squidLog->res->next())
 	{
-		cout<<6<<"\n";
 		user=squidLog->res->getString(6);
 		domain=parseURLtoDomain(squidLog->res->getString(11));
 
@@ -93,18 +92,15 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					temp[x]='_';
 				}
 			}
-		cout<<temp;
 		statLog->createStatTableName(temp);
-
 		}
 
 
 		if(squidLog->res->getString(7) != "TCP_DENIED")
 		{
-			cout<<"tcp_miss\n";
 			pointObj = checkDataInOBJ(NoACCOBJ,user,domain);
 
-			cout<<pointObj<<"\n";
+
 
 			if(pointObj != -1)
 			{
@@ -112,12 +108,10 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 			}
 			else
 			{
-				cout<<NoACCOBJ<<"\n";
 				if(NoACCOBJ<MAXACCESSOBJ)
 				{
 					createNewObj();
 					pointObj = NoACCOBJ -1;
-					cout<<"pointOBj="<<pointObj<<"\n";
 				}
 				else
 				{
@@ -127,7 +121,6 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				}
 
 				isnewLogInTable = checkDataInTable(statLog,statLog->tableNameAcc,user,domain);
-				cout<<isnewLogInTable<<"\n";
 
 				if(isnewLogInTable == 1)
 				{
@@ -140,7 +133,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				}
 			}
 		}
-		/*else
+		else
 		{
 			pointObj = checkDataInDenOBJ(NoDENOBJ,user,domain);
 
@@ -174,7 +167,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					updateDataInDenObj(statLog,rowDataDen[pointObj],squidLog->res);
 				}
 			}
-		}*/
+		}
 	}
 
 }

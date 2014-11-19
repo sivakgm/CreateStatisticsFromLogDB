@@ -14,12 +14,10 @@
 
 void DBConnection::dbConnOpen(string host,string port,string user,string pass,string schema)
 {
-	cout<<"open db\n";
 	Driver *driver = get_driver_instance();
 	string addre = "tcp://"+host+":"+port;
 	this->conn = driver->connect(addre,user,pass);
 	this->conn->setSchema(schema);
-	cout<<"end db\n";
 	return;
 }
 
@@ -37,12 +35,10 @@ void DBConnection::createStatTableName(string tableName)
 void DBConnection::createTableIfNotExist()
 {
 	this->stmt=this->conn->createStatement();
-	cout<<"create table\n";
 	this->stmt->execute("create table if not exists " + this->tableNameAcc + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
 	this->stmt->execute("create table if not exists " + this->tableNameDen + " (user varchar(12), domain varchar(100), connection int);");
 	this->stmt->execute("create table if not exists " + this->tableNameAccTime + " (user varchar(12), domain varchar(100), accTime varchar(15));");
 	this->stmt->execute("create table if not exists " + this->tableNameDenTime + " (user varchar(12), domain varchar(100), accTime varchar(15));");
-	cout<<"end create table\n";
 }
 
 void DBConnection::setPstmt()

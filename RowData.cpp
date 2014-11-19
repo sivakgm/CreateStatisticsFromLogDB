@@ -26,8 +26,6 @@ RowData::RowData(void)
 	isInTable = 0;
 }
 
-
-
 /*RowData::~RowData() {
 	// TODO Auto-generated destructor stub
 }*/
@@ -65,9 +63,7 @@ int getLeastObjPriority()
 void createNewObj()
 {
 	rowDataAcc[NoACCOBJ] = new RowData();
-
 	NoACCOBJ++;
-	cout<<"created\n";
 	return;
 }
 
@@ -143,7 +139,7 @@ int checkDataInOBJ(int count,string user,string domain)
 }
 
 
-void readResSet(DBConnection *logDB)
+/*void readResSet(DBConnection *logDB)
 {
 	while(logDB->res->next())
 	{
@@ -156,11 +152,11 @@ void readResSet(DBConnection *logDB)
 
 		/*cout<<"\t"<<logDB->res->getString(1);
 		cout<<"\t"<<logDB->res->getString(2);
-		cout<<"\t"<<logDB->res->getInt(3)<<endl;*/
+		cout<<"\t"<<logDB->res->getInt(3)<<endl;
 
 	}
 	return;
-}
+}*/
 
 
 int checkDataInTable(DBConnection *statLog,string tableName,string user,string domain)

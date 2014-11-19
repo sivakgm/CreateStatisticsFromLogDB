@@ -34,7 +34,7 @@ public:
 	RowDataDenied();
 };
 
-
+void insertAllDenObjDataIntoTable(DBConnection *statLog);
 void updateDataInDenObj(DBConnection *statLog,RowDataDenied *rowDenData,ResultSet *res);
 int checkDataInDenOBJ(int count,string user,string domain);
 void setDenObjPriority(int lim);

@@ -18,6 +18,23 @@ void DBConnection::createDBIfNotExists(string schema)
 	return;
 }
 
+void DBConnection::createStatTable(int flag,string tableName)
+{
+	this->stmt=this->conn->createStatement();
+	if(tableName != "")
+	{
+		if(flag == 1)
+		{
+			this->stmt->execute("create table if not exists ud_acc_" + tableName + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
+			this->stmt->execute("create table if not exists ud_den_" + tableName + " (user varchar(12), domain varchar(100),connection int);");
+		}
+		else
+		{
+			this->stmt->execute("create table if not exists ud_acc_" + tableName + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
+			this->stmt->execute("create table if not exists ud_den_" + tableName + " (user varchar(12), domain varchar(100),connection int);");
+		}
+	}
+}
 
 void DBConnection::dbConnOpen(string host,string port,string user,string pass,string schema)
 {

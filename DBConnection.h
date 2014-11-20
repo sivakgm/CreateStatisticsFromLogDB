@@ -62,7 +62,7 @@ public:
 	void createStatTableName(string tableName);
 	void createTableIfNotExist();
 	void createDBIfNotExists(string schema);
-
+	void createStatTable(int flag,string tableName);
 };
 
 string parseURLtoDomain(string url);

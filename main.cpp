@@ -11,7 +11,6 @@
 #include "RowData.h"
 #include "RowDataDenied.h"
 
-
 void createStatistics(DBConnection *,DBConnection *);
 
 const int MAXDENIEDOBJ = 20;
@@ -24,8 +23,13 @@ RowDataDenied *rowDataDen[MAXDENIEDOBJ];
 RowData *rowDataAcc[MAXACCESSOBJ];
 
 
+string logDate="",year="",month="",day="";
+
 int main()
 {
+
+	//readConfFile();
+
 	cout<<"Started the program\n";
 
 	DBConnection *squidLog = new DBConnection();
@@ -47,13 +51,33 @@ int main()
 	}
 
 
+
+	//writeConfFile();
 	cout<<"End Of program \n";
 	return 0;
 }
 
+
+/*void readConfFile()
+{
+	ifstream confFile("squidStatistics.conf");
+	for(int i=0;i<5;i++)
+	{
+		confFile>>confFile[i];
+	}
+}
+
+void writeConfFile()
+{
+	ofstream confFile("squidStatistics.conf");
+	for(int i=0;i<5;i++)
+	{
+		confFile<<confFile[i]<<"\n";
+	}
+}*/
+
 void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 {
-	string logDate = "",year="",month="";
 	string user;
 	string domain;
 	int pointObj,isnewLogInTable;
@@ -65,6 +89,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 
 		if(squidLog->res->getString(3) != logDate )
 		{
+
 			logDate = squidLog->res->getString(3);
 			string temp = logDate;
 			for(unsigned int x=0;x<temp.length();x++)
@@ -75,18 +100,24 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				}
 			}
 
-		if(year != logDate.substr(6,4))
-		{
-			year=logDate.substr(6,4);
-			string dbName = "squidStatistics_"+year;
-			statLog->dbConnOpen("127.0.0.1","3306","root","simple",dbName);
-		}
-		if(month != logDate.substr(3,2))
-		{
-			month = logDate.substr(3,2);
+			if(year != logDate.substr(6,4))
+			{
+				year=logDate.substr(6,4);
+				string dbName = "squidStatistics_"+year;
+				statLog->dbConnOpen("127.0.0.1","3306","root","simple",dbName);
+				statLog->createStatTable(1,year);
+			}
+			if(month != logDate.substr(3,2))
+			{
+				month = logDate.substr(3,2);
+				statLog->createStatTable(0,month);
+			}
+			if(day != logDate.substr(0,2))
+			{
+				day = logDate.substr(0,2);
+			}
 
-		}
-		statLog->createStatTableName(temp);
+			statLog->createStatTableName(temp);
 		}
 
 

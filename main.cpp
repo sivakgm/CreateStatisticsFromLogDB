@@ -10,6 +10,7 @@
 #include "DBConnection.h"
 #include "RowData.h"
 #include "RowDataDenied.h"
+#include "grossStatistics.h"
 
 void createStatistics(DBConnection *,DBConnection *);
 
@@ -19,8 +20,11 @@ int NoDENOBJ;
 const int MAXACCESSOBJ = 20;
 int NoACCOBJ;
 
+
 RowDataDenied *rowDataDen[MAXDENIEDOBJ];
 RowData *rowDataAcc[MAXACCESSOBJ];
+
+DBConnection *statLog;
 
 
 string logDate="",year="",month="",day="";
@@ -38,7 +42,7 @@ int main()
 	squidLog->setReadPstmt(1,squidLog->tableName,"","");
 	squidLog->readTable();
 
-	DBConnection *statLog = new DBConnection();;
+	statLog = new DBConnection();
 	createStatistics(squidLog,statLog);
 
 	for(int i=0;i<NoACCOBJ;i++)
@@ -50,6 +54,7 @@ int main()
 		delete rowDataDen[i];
 	}
 
+	grossStatistics(statLog->tableNameAcc);
 
 
 	//writeConfFile();

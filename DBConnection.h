@@ -44,7 +44,7 @@ public:
 	ResultSet *res;
 
 	string tableName;
-	string tableNameAcc,tableNameDen,tableNameAccTime,tableNameDenTime;
+	string tableNameAcc,tableNameDen,tableNameAccTime,tableNameDenTime,tableNameMonth,tableNameYear;
 
 
 	void dbConnOpen(string host,string port,string user,string pass,string schema);

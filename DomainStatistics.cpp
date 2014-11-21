@@ -7,7 +7,7 @@
 
 #include "DomainStatistics.h"
 
-namespace boost {
+/*namespace boost {
 
 DomainStatistics::DomainStatistics() {
 	// TODO Auto-generated constructor stub

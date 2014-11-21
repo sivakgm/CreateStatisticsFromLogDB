@@ -55,7 +55,7 @@ int main()
 	}
 
 	grossStatisticsAcc(statLog->tableNameAcc);
-
+	grossStatisticsDen(statLog->tableNameDen);
 
 	//writeConfFile();
 	cout<<"End Of program \n";

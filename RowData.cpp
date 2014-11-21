@@ -95,11 +95,11 @@ void insertObjIntoTable(int pointObj,DBConnection *statLog)
 {
 	if(rowDataAcc[pointObj]->isInTable == 1)
 	{
-		statLog->updateTableAcc(rowDataAcc[pointObj]);
+		updateTableAcc(rowDataAcc[pointObj],statLog->upPstmtAcc);
 	}
 	else
 	{
-		statLog->insertIntoTableAcc(rowDataAcc[pointObj]);
+		insertIntoTableAcc(rowDataAcc[pointObj],statLog->insPstmtAcc);
 	}
 }
 
@@ -120,7 +120,7 @@ void updateDataInObj(DBConnection *statLog,RowData *rowdata,ResultSet *res)
 	{
 		rowdata->miss = rowdata->miss + res->getDouble(9) ;
 	}
-	statLog->insertIntoTableAccTime(rowdata,res->getString(4));
+	insertIntoTableAccTime(rowdata,res->getString(4),statLog->insPstmtAccTime);
 	setObjPriority(lim);
 	return;
 }

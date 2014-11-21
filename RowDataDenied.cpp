@@ -37,11 +37,11 @@ void insertDenObjIntoTable(int pointObj,DBConnection *statLog)
 {
 	if(rowDataDen[pointObj]->isInTable == 1)
 	{
-		statLog->updateTableDen(rowDataDen[pointObj]);
+		updateTableDen(rowDataDen[pointObj],statLog->upPstmtDen);
 	}
 	else
 	{
-		statLog->insertIntoTableDen(rowDataDen[pointObj]);
+		insertIntoTableDen(rowDataDen[pointObj],statLog->insPstmtDen);
 	}
 }
 
@@ -85,7 +85,7 @@ void updateDataInDenObj(DBConnection *statLog,RowDataDenied *rowdataden,ResultSe
 	rowdataden->connection = rowdataden->connection + 1;
 	rowdataden->priority = 0;
 
-	statLog->insertIntoTableDenTime(rowdataden,res->getString(4));
+	insertIntoTableDenTime(rowdataden,res->getString(4),statLog->insPstmtDenTime);
 	setDenObjPriority(lim);
 	return;
 }

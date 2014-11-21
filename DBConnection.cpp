@@ -25,11 +25,15 @@ void DBConnection::createStatTable(int flag,string tableName)
 	{
 		if(flag == 1)
 		{
+			this->tableNameYearAcc = "ud_acc_"+tableName;
+			this->tableNameYearDen = "ud_den_"+tableName;
 			this->stmt->execute("create table if not exists ud_acc_" + tableName + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
 			this->stmt->execute("create table if not exists ud_den_" + tableName + " (user varchar(12), domain varchar(100),connection int);");
 		}
 		else
 		{
+			this->tableNameMonthAcc = "ud_acc_"+tableName;
+			this->tableNameMonthDen = "ud_den_"+tableName;
 			this->stmt->execute("create table if not exists ud_acc_" + tableName + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
 			this->stmt->execute("create table if not exists ud_den_" + tableName + " (user varchar(12), domain varchar(100),connection int);");
 		}
@@ -119,64 +123,64 @@ string timeAndDate()
 	return date;
 }
 
-void DBConnection::insertIntoTableAccTime(RowData *rowData,string acctime)
+void insertIntoTableAccTime(RowData *rowData,string acctime,PreparedStatement *pstmt)
 {
-	this->insPstmtAccTime->setString(1,rowData->user);
-	this->insPstmtAccTime->setString(2,rowData->domain);
-	this->insPstmtAccTime->setString(3,acctime);
-    this->insPstmtAccTime->executeUpdate();
+	pstmt->setString(1,rowData->user);
+	pstmt->setString(2,rowData->domain);
+	pstmt->setString(3,acctime);
+	pstmt->executeUpdate();
 }
 
-void DBConnection::insertIntoTableDenTime(RowDataDenied *rowData,string acctime)
+void insertIntoTableDenTime(RowDataDenied *rowData,string acctime,PreparedStatement *pstmt)
 {
-    this->insPstmtDenTime->setString(1,rowData->user);
-    this->insPstmtDenTime->setString(2,rowData->domain);
-    this->insPstmtDenTime->setString(3,acctime);
-    this->insPstmtDenTime->executeUpdate();
+	pstmt->setString(1,rowData->user);
+	pstmt->setString(2,rowData->domain);
+	pstmt->setString(3,acctime);
+	pstmt->executeUpdate();
 }
 
 
-void DBConnection::insertIntoTableAcc(RowData *rowData)
+void insertIntoTableAcc(RowData *rowData,PreparedStatement *pstmt)
 {
-    this->insPstmtAcc->setString(1,rowData->user);
-    this->insPstmtAcc->setString(2,rowData->domain);
-    this->insPstmtAcc->setDouble(3,rowData->size);
-    this->insPstmtAcc->setInt(4,rowData->connection);
-    this->insPstmtAcc->setDouble(5,rowData->hit);
-    this->insPstmtAcc->setDouble(6,rowData->miss);
-    this->insPstmtAcc->setDouble(7,rowData->respone_time);
-    this->insPstmtAcc->executeUpdate();
+	pstmt->setString(1,rowData->user);
+	pstmt->setString(2,rowData->domain);
+	pstmt->setDouble(3,rowData->size);
+	pstmt->setInt(4,rowData->connection);
+	pstmt->setDouble(5,rowData->hit);
+	pstmt->setDouble(6,rowData->miss);
+	pstmt->setDouble(7,rowData->respone_time);
+	pstmt->executeUpdate();
 }
 
-void DBConnection::updateTableAcc(RowData *rowData)
+void updateTableAcc(RowData *rowData,PreparedStatement *pstmt)
 {
-    this->upPstmtAcc->setDouble(1,rowData->size);
-    this->upPstmtAcc->setInt(2,rowData->connection);
-    this->upPstmtAcc->setDouble(3,rowData->hit);
-    this->upPstmtAcc->setDouble(4,rowData->miss);
-    this->upPstmtAcc->setDouble(5,rowData->respone_time);
-    this->upPstmtAcc->setString(6,rowData->user);
-    this->upPstmtAcc->setString(7,rowData->domain);
+	pstmt->setDouble(1,rowData->size);
+	pstmt->setInt(2,rowData->connection);
+	pstmt->setDouble(3,rowData->hit);
+	pstmt->setDouble(4,rowData->miss);
+	pstmt->setDouble(5,rowData->respone_time);
+	pstmt->setString(6,rowData->user);
+	pstmt->setString(7,rowData->domain);
 
-    this->upPstmtAcc->executeUpdate();
+	pstmt->executeUpdate();
     return;
 }
 
-void DBConnection::insertIntoTableDen(RowDataDenied *rowData)
+void insertIntoTableDen(RowDataDenied *rowData,PreparedStatement *pstmt)
 {
-    this->insPstmtDen->setString(1,rowData->user);
-    this->insPstmtDen->setString(2,rowData->domain);
-    this->insPstmtDen->setInt(3,rowData->connection);
-    this->insPstmtDen->executeUpdate();
+	pstmt->setString(1,rowData->user);
+	pstmt->setString(2,rowData->domain);
+	pstmt->setInt(3,rowData->connection);
+	pstmt->executeUpdate();
     return;
 }
 
-void DBConnection::updateTableDen(RowDataDenied *rowData)
+void updateTableDen(RowDataDenied *rowData,PreparedStatement *pstmt)
 {
-    this->upPstmtDen->setInt(1,rowData->connection);
-    this->upPstmtDen->setString(2,rowData->user);
-    this->upPstmtDen->setString(3,rowData->domain);
-    this->upPstmtDen->executeUpdate();
+	pstmt->setInt(1,rowData->connection);
+	pstmt->setString(2,rowData->user);
+	pstmt->setString(3,rowData->domain);
+	pstmt->executeUpdate();
     return;
 }
 

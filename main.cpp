@@ -54,7 +54,7 @@ int main()
 		delete rowDataDen[i];
 	}
 
-	//grossStatistics(statLog->tableNameAcc);
+	grossStatisticsAcc(statLog->tableNameAcc);
 
 
 	//writeConfFile();

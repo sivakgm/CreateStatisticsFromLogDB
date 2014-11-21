@@ -51,12 +51,6 @@ public:
 
 	void setPstmt();
 	void setReadPstmt(int a,string tableName,string user,string domain);
-	void insertIntoTableAcc(RowData *rowData);
-	void updateTableAcc(RowData *rowData);
-	void insertIntoTableDen(RowDataDenied *rowData);
-	void updateTableDen(RowDataDenied *rowData);
-	void insertIntoTableAccTime(RowData *rowData,string time);
-	void insertIntoTableDenTime(RowDataDenied *rowData,string time);
 	void readTable();
 
 	void createStatTableName(string tableName);
@@ -64,6 +58,13 @@ public:
 	void createDBIfNotExists(string schema);
 	void createStatTable(int flag,string tableName);
 };
+
+void insertIntoTableAcc(RowData *rowData,PreparedStatement *pstmt);
+void updateTableAcc(RowData *rowData,PreparedStatement *pstmt);
+void insertIntoTableDen(RowDataDenied *rowData,PreparedStatement *pstmt);
+void updateTableDen(RowDataDenied *rowData,PreparedStatement *pstmt);
+void insertIntoTableAccTime(RowData *rowData,string time,PreparedStatement *pstmt);
+void insertIntoTableDenTime(RowDataDenied *rowData,string time,PreparedStatement *pstmt);
 
 string parseURLtoDomain(string url);
 string timeAndDate();

@@ -11,16 +11,21 @@
 
 extern DBConnection *statLog;
 
+void updateRowData(ResultSet *dRes,ResultSet *ymRes);
+void insertRowData();
+
 void grossStatisticsAcc(string tableName)
 {
-	PreparedStatement *pstmt;
+	PreparedStatement *readPstmt,*inPstmt,*upPstmt;
 	ResultSet *res,*resgross;
-	string selectQuery = "select * from " + tableName +";";
-	string searchQueryMonth = "select * from ? where user=? and domain=?;";
-	pstmt = statLog->conn->prepareStatement(selectQuery);
-	res = pstmt->executeQuery();
 
-	pstmt=statLog->conn->prepareStatement(searchQueryMonth);
+
+	string searchQueryMonth = "select * from "+ statLog->tableNameMonthAcc +" where user=? and domain=?;";
+	string searchQueryYear = "select * from "+ statLog->tableNameYearAcc +" where user=? and domain=?;";
+
+	string selectQuery = "select * from " + tableName +";";
+	readPstmt = statLog->conn->prepareStatement(selectQuery);
+	res = readPstmt->executeQuery();
 
 	while(res->next())
 	{
@@ -28,26 +33,34 @@ void grossStatisticsAcc(string tableName)
 		{
 			if(i ==  0)
 			{
-				pstmt->setString(1,statLog->tableNameMonth);
+				readPstmt=statLog->conn->prepareStatement(searchQueryMonth);
 			}
 			else
 			{
-				pstmt->setString(1,statLog->tableNameYear);
+				readPstmt=statLog->conn->prepareStatement(searchQueryMonth);
 			}
-			pstmt->setString(2,res->getString(1));
-			pstmt->setString(3,res->getString(2));
-			resgross = pstmt->executeQuery();
+			readPstmt->setString(1,res->getString(1));
+			readPstmt->setString(2,res->getString(2));
+			resgross = readPstmt->executeQuery();
+
 			if(resgross->next())
 			{
-
+				updateRowData(resgross,res);
 			}
 			else
 			{
-
+				insertRowData();
 			}
 		}
 	}
 
 }
 
-
+void updateRowData(ResultSet *dRes,ResultSet *ymRes)
+{
+	double size = dRes->getDouble(3) + ymRes->getDouble(3);
+	int conn = dRes->getInt(4) + ymRes->getInt(4);
+	double hit = dRes->getDouble(5) + ymRes->getDouble(5);
+	double miss = dRes->getDouble(6) + ymRes->getDouble(6);
+	double reponse_time = dRes->getDouble(7) + ymRes->getDouble(7);
+}

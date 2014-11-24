@@ -8,6 +8,11 @@
 #ifndef USERSTATISTICS_H_
 #define USERSTATISTICS_H_
 
+#include <string>
+#include "DBConnection.h"
+
+void createUserStatistics(string tableName);
+
 /*namespace boost {
 
 class UserStatistics {

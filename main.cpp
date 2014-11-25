@@ -6,6 +6,8 @@
  */
 
 
+#include <fstream>
+
 
 #include "DBConnection.h"
 #include "RowData.h"
@@ -15,12 +17,16 @@
 #include "UserStatistics.h"
 
 void createStatistics(DBConnection *,DBConnection *);
+void readConfFile();
+void writeConfFile();
 
 const int MAXDENIEDOBJ = 20;
 int NoDENOBJ;
 
 const int MAXACCESSOBJ = 20;
 int NoACCOBJ;
+
+unsigned long int tabIndex ;
 
 
 RowDataDenied *rowDataDen[MAXDENIEDOBJ];
@@ -33,28 +39,31 @@ string logDate="",year="",month="",day="";
 
 int main()
 {
-
-	//readConfFile();
-
+	readConfFile();
 	cout<<"Started the program\n";
+	cout<<tabIndex;
 
 	DBConnection *squidLog = new DBConnection();
 	squidLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
 	squidLog->tableName = "access_log";
+
+	string logReadQuery = "select * from access_log where id > ?;";
+	PreparedStatement *pstm = squidLog->conn->prepareStatement(logReadQuery);
+	pstm->setInt(1,tabIndex);
+	squidLog->res = pstm->executeQuery();
+
+
+	/*DBConnection *squidLog = new DBConnection();
+	squidLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
+
+	squidLog->tableName = "access_log";
 	squidLog->setReadPstmt(1,squidLog->tableName,"","");
-	squidLog->readTable();
+	squidLog->readTable();*/
+
 
 	statLog = new DBConnection();
 	createStatistics(squidLog,statLog);
 
-	for(int i=0;i<NoACCOBJ;i++)
-	{
-		delete rowDataAcc[i];
-	}
-	for(int i=0;i<NoDENOBJ;i++)
-	{
-		delete rowDataDen[i];
-	}
 
 	/*grossStatisticsAcc(statLog->tableNameAcc);
 	grossStatisticsDen(statLog->tableNameDen);
@@ -63,29 +72,24 @@ int main()
 	createDomainStatisticsDen(statLog->tableNameDen);
 	createUserStatisticsDen(statLog->tableNameDen);*/
 
-	//writeConfFile();
+	writeConfFile();
 	cout<<"End Of program \n";
 	return 0;
 }
 
 
-/*void readConfFile()
+void readConfFile()
 {
-	ifstream confFile("squidStatistics.conf");
-	for(int i=0;i<5;i++)
-	{
-		confFile>>confFile[i];
-	}
+	ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/squ.conf");
+	confFile>>tabIndex;
 }
 
 void writeConfFile()
 {
-	ofstream confFile("squidStatistics.conf");
-	for(int i=0;i<5;i++)
-	{
-		confFile<<confFile[i]<<"\n";
-	}
-}*/
+	ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/squ.conf");
+	confFile<<tabIndex;
+
+}
 
 void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 {
@@ -96,7 +100,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 	{
 		user=squidLog->res->getString(6);
 		domain=parseURLtoDomain(squidLog->res->getString(11));
-		//cout<<user<<"\t"<<domain<<"\n";
+		cout<<user<<"\t"<<domain<<"\n";
 
 		if(squidLog->res->getString(3) != logDate )
 		{
@@ -116,17 +120,20 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 							year=logDate.substr(6,4);
 							string dbName = "squidStatistics_"+year;
 							statLog->dbConnOpen("127.0.0.1","3306","root","simple",dbName);
-						//	statLog->createStatTable(1,year);
+							statLog->createStatTable(1,year);
 			}
 			if(month != logDate.substr(3,2))
 			{
 							month = logDate.substr(3,2);
-						//	statLog->createStatTable(0,month);
+							statLog->createStatTable(0,month);
 			}
 			if(day != logDate.substr(0,2))
 			{
 				if(day != "")
 				{
+					cout<<"change date \n";
+					insertAllObjDataIntoTable(statLog);
+					insertAllDenObjDataIntoTable(statLog);
 					grossStatisticsAcc(statLog->tableNameAcc);
 					createDomainStatisticsAcc(statLog->tableNameAcc);
 					createUserStatisticsAcc(statLog->tableNameAcc);
@@ -213,8 +220,10 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				}
 			}
 		}
+		tabIndex = squidLog->res->getInt(1);
 	}
 
+	cout<<"ma\n";
 	insertAllObjDataIntoTable(statLog);
 	insertAllDenObjDataIntoTable(statLog);
 }

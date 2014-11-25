@@ -107,6 +107,11 @@ void insertAllDenObjDataIntoTable(DBConnection *statLog)
 	{
 		insertDenObjIntoTable(i,statLog);
 	}
+	for(int i=0;i<NoDENOBJ;i++)
+	{
+			delete rowDataDen[i];
+	}
+	NoDENOBJ = 0;
 }
 
 void createNewDenObj()

@@ -27,14 +27,14 @@ void DBConnection::createStatTable(int flag,string tableName)
 		{
 			this->tableNameYearAcc = "ud_acc_"+tableName;
 			this->tableNameYearDen = "ud_den_"+tableName;
-			this->stmt->execute("create table if not exists ud_acc_" + tableName + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
+			this->stmt->execute("create table if not exists ud_acc_" + tableName + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,response_time float);");
 			this->stmt->execute("create table if not exists ud_den_" + tableName + " (user varchar(12), domain varchar(100),connection int);");
 		}
 		else
 		{
 			this->tableNameMonthAcc = "ud_acc_"+tableName;
 			this->tableNameMonthDen = "ud_den_"+tableName;
-			this->stmt->execute("create table if not exists ud_acc_" + tableName + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
+			this->stmt->execute("create table if not exists ud_acc_" + tableName + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,response_time float);");
 			this->stmt->execute("create table if not exists ud_den_" + tableName + " (user varchar(12), domain varchar(100),connection int);");
 		}
 	}
@@ -64,7 +64,7 @@ void DBConnection::createStatTableName(string tableName)
 void DBConnection::createTableIfNotExist()
 {
 	this->stmt=this->conn->createStatement();
-	this->stmt->execute("create table if not exists " + this->tableNameAcc + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,reponse_time float);");
+	this->stmt->execute("create table if not exists " + this->tableNameAcc + " (user varchar(12), domain varchar(100), size double, connection int, hit float, miss float,response_time float);");
 	this->stmt->execute("create table if not exists " + this->tableNameDen + " (user varchar(12), domain varchar(100), connection int);");
 	this->stmt->execute("create table if not exists " + this->tableNameAccTime + " (user varchar(12), domain varchar(100), accTime varchar(15));");
 	this->stmt->execute("create table if not exists " + this->tableNameDenTime + " (user varchar(12), domain varchar(100), accTime varchar(15));");
@@ -73,10 +73,10 @@ void DBConnection::createTableIfNotExist()
 void DBConnection::setPstmt()
 {
 
-	string query = "insert into " + this->tableNameAcc +"(user,domain,size,connection,hit,miss,reponse_time) values(?,?,?,?,?,?,?)";
+	string query = "insert into " + this->tableNameAcc +"(user,domain,size,connection,hit,miss,response_time) values(?,?,?,?,?,?,?)";
 	this->insPstmtAcc=this->conn->prepareStatement(query);
 
-	query = "update " + this->tableNameAcc + " set size=?,connection=?,hit=?,miss=?,reponse_time=? where user=? and domain=?;";
+	query = "update " + this->tableNameAcc + " set size=?,connection=?,hit=?,miss=?,response_time=? where user=? and domain=?;";
 	this->upPstmtAcc=this->conn->prepareStatement(query);
 
 	query = "insert into " + this->tableNameDen +"(user,domain,connection) values(?,?,?)";
@@ -148,7 +148,7 @@ void insertIntoTableAcc(RowData *rowData,PreparedStatement *pstmt)
 	pstmt->setInt(4,rowData->connection);
 	pstmt->setDouble(5,rowData->hit);
 	pstmt->setDouble(6,rowData->miss);
-	pstmt->setDouble(7,rowData->respone_time);
+	pstmt->setDouble(7,rowData->response_time);
 	pstmt->executeUpdate();
 }
 
@@ -158,7 +158,7 @@ void updateTableAcc(RowData *rowData,PreparedStatement *pstmt)
 	pstmt->setInt(2,rowData->connection);
 	pstmt->setDouble(3,rowData->hit);
 	pstmt->setDouble(4,rowData->miss);
-	pstmt->setDouble(5,rowData->respone_time);
+	pstmt->setDouble(5,rowData->response_time);
 	pstmt->setString(6,rowData->user);
 	pstmt->setString(7,rowData->domain);
 

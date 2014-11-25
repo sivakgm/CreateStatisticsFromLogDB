@@ -11,6 +11,8 @@
 #include "RowData.h"
 #include "RowDataDenied.h"
 #include "grossStatistics.h"
+#include "DomainStatistics.h"
+#include "UserStatistics.h"
 
 void createStatistics(DBConnection *,DBConnection *);
 
@@ -54,8 +56,12 @@ int main()
 		delete rowDataDen[i];
 	}
 
-	grossStatisticsAcc(statLog->tableNameAcc);
+	/*grossStatisticsAcc(statLog->tableNameAcc);
 	grossStatisticsDen(statLog->tableNameDen);
+	createDomainStatisticsAcc(statLog->tableNameAcc);
+	createUserStatisticsAcc(statLog->tableNameAcc);
+	createDomainStatisticsDen(statLog->tableNameDen);
+	createUserStatisticsDen(statLog->tableNameDen);*/
 
 	//writeConfFile();
 	cout<<"End Of program \n";
@@ -107,18 +113,27 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 
 			if(year != logDate.substr(6,4))
 			{
-				year=logDate.substr(6,4);
-				string dbName = "squidStatistics_"+year;
-				statLog->dbConnOpen("127.0.0.1","3306","root","simple",dbName);
-				statLog->createStatTable(1,year);
+							year=logDate.substr(6,4);
+							string dbName = "squidStatistics_"+year;
+							statLog->dbConnOpen("127.0.0.1","3306","root","simple",dbName);
+						//	statLog->createStatTable(1,year);
 			}
 			if(month != logDate.substr(3,2))
 			{
-				month = logDate.substr(3,2);
-				statLog->createStatTable(0,month);
+							month = logDate.substr(3,2);
+						//	statLog->createStatTable(0,month);
 			}
 			if(day != logDate.substr(0,2))
 			{
+				if(day != "")
+				{
+					grossStatisticsAcc(statLog->tableNameAcc);
+					createDomainStatisticsAcc(statLog->tableNameAcc);
+					createUserStatisticsAcc(statLog->tableNameAcc);
+					grossStatisticsDen(statLog->tableNameDen);
+					createDomainStatisticsDen(statLog->tableNameDen);
+					createUserStatisticsDen(statLog->tableNameDen);
+				}
 				day = logDate.substr(0,2);
 			}
 

@@ -10,29 +10,40 @@
 #include "DBConnection.h"
 #include "RowData.h"
 #include "RowDataDenied.h"
+#include "grossStatistics.h"
 
 extern DBConnection *statLog;
 
-void updateRowDataAcc(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt);
-void insertRowDataAcc(ResultSet *ymRes,PreparedStatement *pstmt);
+//void updateRowDataAcc(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt);
+//void insertRowDataAcc(ResultSet *ymRes,PreparedStatement *pstmt);
 
-void updateRowDataDen(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt);
-void insertRowDataDen(ResultSet *ymRes,PreparedStatement *pstmt);
+//void updateRowDataDen(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt);
+//void insertRowDataDen(ResultSet *ymRes,PreparedStatement *pstmt);
 
 void grossStatisticsAcc(string tableName)
 {
 	PreparedStatement *readPstmt,*inPstmt,*upPstmt;
 	ResultSet *dRes,*ymRes;
+	Statement *stmt = statLog->conn->createStatement();
 
+	string year = tableName.substr(13,4);
+	string month = tableName.substr(10,2);
+	string day = tableName.substr(7,2);
 
-	string searchQueryMonth = "select * from "+ statLog->tableNameMonthAcc +"  where user=? and domain=? ;";
-	string searchQueryYear = "select * from "+ statLog->tableNameYearAcc +"  where user=? and domain=?;";
+	string yearStatisticstable = "ud_acc_"+year;
+	string monthStatisticstable = "ud_acc_"+month;
 
-	string insertMonth = "insert into " + statLog->tableNameMonthAcc + "(user,domain,size,connection,hit,miss,reponse_time) values(?,?,?,?,?,?,?);";
-	string updateMonth = "update " + statLog->tableNameMonthAcc + " set size=?,connection=?,hit=?,miss=?,reponse_time=? where user=? and domain=?;";
+	checkPresenecOfGrossStatisticsTableAcc(stmt,yearStatisticstable);
+	checkPresenecOfGrossStatisticsTableAcc(stmt,monthStatisticstable);
 
-	string insertYear = "insert into " + statLog->tableNameYearAcc + "(user,domain,size,connection,hit,miss,reponse_time) values(?,?,?,?,?,?,?);";
-	string updateYear = "update " + statLog->tableNameYearAcc + " set size=?,connection=?,hit=?,miss=?,reponse_time=? where user=? and domain=?;";
+	string searchQueryMonth = "select * from "+ monthStatisticstable +"  where user=? and domain=? ;";
+	string searchQueryYear = "select * from "+ yearStatisticstable +"  where user=? and domain=?;";
+
+	string insertMonth = "insert into " + monthStatisticstable + "(user,domain,size,connection,hit,miss,response_time) values(?,?,?,?,?,?,?);";
+	string updateMonth = "update " + monthStatisticstable + " set size=?,connection=?,hit=?,miss=?,response_time=? where user=? and domain=?;";
+
+	string insertYear = "insert into " + yearStatisticstable + "(user,domain,size,connection,hit,miss,response_time) values(?,?,?,?,?,?,?);";
+	string updateYear = "update " + yearStatisticstable + " set size=?,connection=?,hit=?,miss=?,response_time=? where user=? and domain=?;";
 
 	string selectQuery = "select * from " + tableName +";";
 	readPstmt = statLog->conn->prepareStatement(selectQuery);
@@ -84,14 +95,13 @@ void updateRowDataAcc(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt)
 	rowData->connection = dRes->getInt(4) + ymRes->getInt(4);
 	rowData->hit = dRes->getDouble(5) + ymRes->getDouble(5);
 	rowData->miss = dRes->getDouble(6) + ymRes->getDouble(6);
-	rowData->respone_time = dRes->getDouble(7) + ymRes->getDouble(7);
+	rowData->response_time = dRes->getDouble(7) + ymRes->getDouble(7);
 
 	updateTableAcc(rowData,pstmt);
 
 }
 void insertRowDataAcc(ResultSet *dRes,PreparedStatement *pstmt)
 {
-
 	RowData *rowData = new RowData();
 	rowData->user = dRes->getString(1);
 	rowData->domain = dRes->getString(2);
@@ -99,25 +109,40 @@ void insertRowDataAcc(ResultSet *dRes,PreparedStatement *pstmt)
 	rowData->connection = dRes->getInt(4);
 	rowData->hit = dRes->getDouble(5) ;
 	rowData->miss = dRes->getDouble(6);
-	rowData->respone_time = dRes->getDouble(7);
+	rowData->response_time = dRes->getDouble(7);
 
 	insertIntoTableAcc(rowData,pstmt);
+}
+
+void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tableName)
+{
+	stmt->execute("create table if not exists " + tableName + "(user varchar(12),domain varchar(100), size double, connection int, hit float, miss float,response_time float);");
 }
 
 void grossStatisticsDen(string tableName)
 {
 	PreparedStatement *readPstmt,*inPstmt,*upPstmt;
 	ResultSet *dRes,*ymRes;
+	Statement *stmt = statLog->conn->createStatement();
 
+	string year = tableName.substr(13,4);
+	string month = tableName.substr(10,2);
+	string day = tableName.substr(7,2);
 
-	string searchQueryMonth = "select * from "+ statLog->tableNameMonthDen +"  where user=? and domain=? ;";
-	string searchQueryYear = "select * from "+ statLog->tableNameYearDen +"  where user=? and domain=?;";
+	string yearStatisticstable = "ud_den_"+year;
+	string monthStatisticstable = "ud_den_"+month;
 
-	string insertMonth = "insert into " + statLog->tableNameMonthDen + "(user,domain,connection) values(?,?,?);";
-	string updateMonth = "update " + statLog->tableNameMonthDen + " set connection=? where user=? and domain=?;";
+	checkPresenecOfGrossStatisticsTableDen(stmt,yearStatisticstable);
+	checkPresenecOfGrossStatisticsTableDen(stmt,monthStatisticstable);
 
-	string insertYear = "insert into " + statLog->tableNameYearDen + "(user,domain,connection) values(?,?,?);";
-	string updateYear = "update " + statLog->tableNameYearDen + " set connection=? where user=? and domain=?;";
+	string searchQueryMonth = "select * from "+ monthStatisticstable +"  where user=? and domain=? ;";
+	string searchQueryYear = "select * from "+ yearStatisticstable +"  where user=? and domain=?;";
+
+	string insertMonth = "insert into " + monthStatisticstable + "(user,domain,connection) values(?,?,?);";
+	string updateMonth = "update " + monthStatisticstable + " set connection=? where user=? and domain=?;";
+
+	string insertYear = "insert into " + yearStatisticstable + "(user,domain,connection) values(?,?,?);";
+	string updateYear = "update " + yearStatisticstable + " set connection=? where user=? and domain=?;";
 
 	string selectQuery = "select * from " + tableName +";";
 	readPstmt = statLog->conn->prepareStatement(selectQuery);
@@ -165,7 +190,7 @@ void updateRowDataDen(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt)
 	RowDataDenied *rowData = new RowDataDenied();
 	rowData->user = dRes->getString(1);
 	rowData->domain = dRes->getString(2);
-	rowData->connection = dRes->getInt(4) + ymRes->getInt(3);
+	rowData->connection = dRes->getInt(3) + ymRes->getInt(3);
 
 	updateTableDen(rowData,pstmt);
 
@@ -180,4 +205,9 @@ void insertRowDataDen(ResultSet *dRes,PreparedStatement *pstmt)
 
 
 	insertIntoTableDen(rowData,pstmt);
+}
+
+void checkPresenecOfGrossStatisticsTableDen(Statement *stmt,string tableName)
+{
+	stmt->execute("create table if not exists " + tableName + "(user varchar(12),domain varchar(100), connection int);");
 }

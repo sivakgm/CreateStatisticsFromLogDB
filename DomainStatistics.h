@@ -8,14 +8,21 @@
 #ifndef DOMAINSTATISTICS_H_
 #define DOMAINSTATISTICS_H_
 
-/*namespace boost {
 
-class DomainStatistics {
-public:
-	DomainStatistics();
-	virtual ~DomainStatistics();
-};
+#include <string>
+#include "DBConnection.h"
 
-} /* namespace boost */
+void createDomainStatisticsAcc(string tableName);
+void insertDataIntoDailyDomainStatisticsAcc(RowData *rowData,Statement *stmt,string tableName);
+void checkPresenceOfDomainDataInTableAcc(RowData *rowData,Statement *stmt,string tableName);
+void checkPresenecOfDomainStatisticsTableAcc(Statement *stmt,string tableName);
+
+void createDomainStatisticsDen(string tableName);
+void insertDataIntoDailyDomainStatisticsDen(RowDataDenied *rowDataDenied,Statement *stmt,string tableName);
+void checkPresenceOfDomainDataInTableDen(RowDataDenied *rowDataDenied,Statement *stmt,string tableName);
+void checkPresenecOfDomainStatisticsTableDen(Statement *stmt,string tableName);
+
+
+
 
 #endif /* DOMAINSTATISTICS_H_ */

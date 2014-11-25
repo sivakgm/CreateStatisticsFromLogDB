@@ -35,7 +35,7 @@ public:
 	float miss;
 	int priority;
 	int isInTable;
-	float respone_time;
+	float response_time;
 
 	RowData();
 };

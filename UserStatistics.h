@@ -11,7 +11,16 @@
 #include <string>
 #include "DBConnection.h"
 
-void createUserStatistics(string tableName);
+void createUserStatisticsAcc(string tableName);
+void insertDataIntoDailyUserStatisticsAcc(RowData *rowData,Statement *stmt,string tableName);
+void checkPresenceOfUserDataInTableAcc(RowData *rowData,Statement *stmt,string tableName);
+void checkPresenecOfUserStatisticsTableAcc(Statement *stmt,string tableName);
+
+void createUserStatisticsDen(string tableName);
+void insertDataIntoDailyUserStatisticsDen(RowDataDenied *rowDataDenied,Statement *stmt,string tableName);
+void checkPresenceOfUserDataInTableDen(RowDataDenied *rowDataDenied,Statement *stmt,string tableName);
+void checkPresenecOfUserStatisticsTableDen(Statement *stmt,string tableName);
+
 
 /*namespace boost {
 

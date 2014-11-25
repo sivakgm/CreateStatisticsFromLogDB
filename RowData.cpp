@@ -21,7 +21,7 @@ RowData::RowData(void)
 	miss = 0.0;
 	hit = 0.0;
 	size = 0.0;
-	respone_time = 0.0;
+	response_time = 0.0;
 	priority = 0;
 	isInTable = 0;
 }
@@ -76,7 +76,7 @@ void emptyTheObj(int pointObj)
 		rowDataAcc[pointObj]->hit = 0.0;
 		rowDataAcc[pointObj]->size = 0.0;
 		rowDataAcc[pointObj]->isInTable = 0;
-		rowDataAcc[pointObj]->respone_time = 0;
+		rowDataAcc[pointObj]->response_time = 0;
 }
 
 void updateObjFromTable(int pointObj,ResultSet *res)
@@ -87,7 +87,7 @@ void updateObjFromTable(int pointObj,ResultSet *res)
 	rowDataAcc[pointObj]->miss = res->getDouble(6);
 	rowDataAcc[pointObj]->hit =  res->getDouble(5);
 	rowDataAcc[pointObj]->size = res->getDouble(3);
-	rowDataAcc[pointObj]->respone_time = res->getDouble(7);
+	rowDataAcc[pointObj]->response_time = res->getDouble(7);
 	rowDataAcc[pointObj]->isInTable = 1;
 }
 
@@ -110,7 +110,7 @@ void updateDataInObj(DBConnection *statLog,RowData *rowdata,ResultSet *res)
 	rowdata->domain = parseURLtoDomain(res->getString(11));
 	rowdata->connection = rowdata->connection + 1;
 	rowdata->size = rowdata->size + res->getDouble(9);
-	rowdata->respone_time = rowdata->respone_time + res->getDouble(5);
+	rowdata->response_time = rowdata->response_time + res->getDouble(5);
 	rowdata->priority = 0;
 	if(res->getString(7) == "TCP_HIT" || res->getString(7) == "TCP_MEM_HIT" || res->getString(7) == "UDP_HIT" || res->getString(7) == "UDP_HIT_OBJ")
 	{

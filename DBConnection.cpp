@@ -142,7 +142,6 @@ void insertIntoTableDenTime(RowDataDenied *rowData,string acctime,PreparedStatem
 
 void insertIntoTableAcc(RowData *rowData,PreparedStatement *pstmt)
 {
-	cout<<"writing obj data into table\n";
 	pstmt->setString(1,rowData->user);
 	pstmt->setString(2,rowData->domain);
 	pstmt->setDouble(3,rowData->size);
@@ -155,7 +154,6 @@ void insertIntoTableAcc(RowData *rowData,PreparedStatement *pstmt)
 
 void updateTableAcc(RowData *rowData,PreparedStatement *pstmt)
 {
-	cout<<"writing obj data into table\n";
 	pstmt->setDouble(1,rowData->size);
 	pstmt->setInt(2,rowData->connection);
 	pstmt->setDouble(3,rowData->hit);

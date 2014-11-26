@@ -8,7 +8,7 @@
 #ifndef GROSSSTATISTICS_H_
 #define GROSSSTATISTICS_H_
 
-void grossStatisticsAcc(string tableName);
+void *grossStatisticsAcc(void *tbNa);
 void insertRowDataAcc(ResultSet *dRes,PreparedStatement *pstmt);
 void updateRowDataAcc(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt);
 void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tableName);

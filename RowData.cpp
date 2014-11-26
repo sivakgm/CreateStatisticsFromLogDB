@@ -32,7 +32,7 @@ RowData::RowData(void)
 
 void insertAllObjDataIntoTable(DBConnection *statLog)
 {
-	cout<<"test\n";
+	//cout<<"test\n";
 	for(int i=0;i<NoACCOBJ;i++)
 	{
 		insertObjIntoTable(i,statLog);

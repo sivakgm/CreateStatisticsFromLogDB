@@ -7,7 +7,8 @@
 
 
 #include <fstream>
-
+#include <cstdlib>
+#include <pthread.h>
 
 #include "DBConnection.h"
 #include "RowData.h"
@@ -41,7 +42,7 @@ int main()
 {
 	readConfFile();
 	cout<<"Started the program\n";
-	cout<<tabIndex;
+	//cout<<tabIndex;
 
 	DBConnection *squidLog = new DBConnection();
 	squidLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
@@ -74,6 +75,7 @@ int main()
 
 	writeConfFile();
 	cout<<"End Of program \n";
+	pthread_exit(NULL);
 	return 0;
 }
 
@@ -100,7 +102,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 	{
 		user=squidLog->res->getString(6);
 		domain=parseURLtoDomain(squidLog->res->getString(11));
-		cout<<user<<"\t"<<domain<<"\n";
+	//	cout<<user<<"\t"<<domain<<"\n";
 
 		if(squidLog->res->getString(3) != logDate )
 		{
@@ -131,20 +133,37 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 			{
 				if(day != "")
 				{
-					cout<<"change date \n";
+
+					ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
+					confFile<<statLog->tableNameAcc;
+
+					ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
+					confFile1<<statLog->tableNameDen;
+
+					pthread_t thread;
+					string s = statLog->tableNameAcc;
+				//	cout<<statLog->tableNameDen<<"\n";
+//					const char *acc = s.c_str();
+				//	cout<<"main:"<<acc<<endl;
 					insertAllObjDataIntoTable(statLog);
 					insertAllDenObjDataIntoTable(statLog);
-					grossStatisticsAcc(statLog->tableNameAcc);
-					createDomainStatisticsAcc(statLog->tableNameAcc);
-					createUserStatisticsAcc(statLog->tableNameAcc);
-					grossStatisticsDen(statLog->tableNameDen);
-					createDomainStatisticsDen(statLog->tableNameDen);
-					createUserStatisticsDen(statLog->tableNameDen);
+			//		cout<<"starting thread for access gross statistics\n";
+
+					pthread_create(&thread, NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+
+
+					//	cout<<"main 1:"<<acc<<endl;
+					//createDomainStatisticsAcc(statLog->tableNameAcc);
+					//createUserStatisticsAcc(statLog->tableNameAcc);
+					//grossStatisticsDen(statLog->tableNameDen);
+					//createDomainStatisticsDen(statLog->tableNameDen);
+					//createUserStatisticsDen(statLog->tableNameDen);
 				}
 				day = logDate.substr(0,2);
 			}
-
+			//sleep(2);
 			statLog->createStatTableName(temp);
+
 		}
 
 
@@ -223,8 +242,9 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 		tabIndex = squidLog->res->getInt(1);
 	}
 
-	cout<<"ma\n";
+//	cout<<"ma\n";
 	insertAllObjDataIntoTable(statLog);
 	insertAllDenObjDataIntoTable(statLog);
+
 }
 

@@ -5,15 +5,17 @@
  *      Author: sivaprakash
  */
 
+
+
 #include "UserStatistics.h"
 #include "RowData.h"
 #include "RowDataDenied.h"
 
-extern DBConnection *statLog;
 
 
 void createUserStatisticsAcc(string tableName)
 {
+
 	string userQuery = "select * from "+ tableName + " order by user;";
 
 	PreparedStatement *readPstmt;
@@ -27,8 +29,13 @@ void createUserStatisticsAcc(string tableName)
 	string yearStatisticstable = "u_acc_"+year;
 	string monthStatisticstable = "u_acc_"+month;
 	string dayStatisticstable = "u_acc_"+day+"_"+month+"_"+year;
+	string schema = "squidStatistics_"+year;
 
-	Statement *stmt = statLog->conn->createStatement();
+	DBConnection *grossLog = new DBConnection();
+	grossLog->dbConnOpen("127.0.0.1","3306","root","simple",schema);
+
+	Statement *stmt = grossLog->conn->createStatement();
+
 	string user="";
 	RowData *rowData = new RowData();
 
@@ -36,7 +43,7 @@ void createUserStatisticsAcc(string tableName)
 	checkPresenecOfUserStatisticsTableAcc(stmt,monthStatisticstable);
 	checkPresenecOfUserStatisticsTableAcc(stmt,yearStatisticstable);
 
-	readPstmt = statLog->conn->prepareStatement(userQuery);
+	readPstmt = grossLog->conn->prepareStatement(userQuery);
 	udStatData = readPstmt->executeQuery();
 
 	while(udStatData->next())
@@ -102,6 +109,8 @@ void checkPresenecOfUserStatisticsTableAcc(Statement *stmt,string tableName)
 
 void createUserStatisticsDen(string tableName)
 {
+
+
 	string userQuery = "select * from "+ tableName + " order by user;";
 
 	PreparedStatement *readPstmt;
@@ -116,7 +125,12 @@ void createUserStatisticsDen(string tableName)
 	string monthStatisticstable = "u_den_"+month;
 	string dayStatisticstable = "u_den_"+day+"_"+month+"_"+year;
 
-	Statement *stmt = statLog->conn->createStatement();
+	string schema = "squidStatistics_"+year;
+
+	DBConnection *grossLog = new DBConnection();
+	grossLog->dbConnOpen("127.0.0.1","3306","root","simple",schema);
+
+	Statement *stmt = grossLog->conn->createStatement();
 	string user="";
 	RowDataDenied *rowDataDenied = new RowDataDenied();
 
@@ -124,7 +138,7 @@ void createUserStatisticsDen(string tableName)
 	checkPresenecOfUserStatisticsTableDen(stmt,monthStatisticstable);
 	checkPresenecOfUserStatisticsTableDen(stmt,yearStatisticstable);
 
-	readPstmt = statLog->conn->prepareStatement(userQuery);
+	readPstmt = grossLog->conn->prepareStatement(userQuery);
 	udStatData = readPstmt->executeQuery();
 
 	while(udStatData->next())

@@ -13,7 +13,7 @@ void insertRowDataAcc(ResultSet *dRes,PreparedStatement *pstmt);
 void updateRowDataAcc(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt);
 void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tableName);
 
-void grossStatisticsDen(string tableName);
+void *grossStatisticsDen(void *tbNa);
 void insertRowDataDen(ResultSet *dRes,PreparedStatement *pstmt);
 void updateRowDataDen(ResultSet *dRes,ResultSet *ymRes,PreparedStatement *pstmt);
 void checkPresenecOfGrossStatisticsTableDen(Statement *stmt,string tableName);

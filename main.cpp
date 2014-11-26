@@ -140,16 +140,20 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
 					confFile1<<statLog->tableNameDen;
 
-					pthread_t thread;
+					pthread_t thread[4];
 					string s = statLog->tableNameAcc;
 				//	cout<<statLog->tableNameDen<<"\n";
 //					const char *acc = s.c_str();
 				//	cout<<"main:"<<acc<<endl;
 					insertAllObjDataIntoTable(statLog);
 					insertAllDenObjDataIntoTable(statLog);
-			//		cout<<"starting thread for access gross statistics\n";
+					cout<<"starting thread for access gross statistics\n";
 
-					pthread_create(&thread, NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+					pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+					pthread_create(&thread[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
+
+				//	pthread_create(&thread[3], NULL,createUserStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+				//	pthread_create(&thread[4], NULL,createUserStatisticsDen,(void *)statLog->tableNameDen.c_str());
 
 
 					//	cout<<"main 1:"<<acc<<endl;

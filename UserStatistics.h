@@ -9,7 +9,10 @@
 #define USERSTATISTICS_H_
 
 #include <string>
+#include <fstream>
+#include <cstdlib>
 #include "DBConnection.h"
+
 
 void createUserStatisticsAcc(string tableName);
 void insertDataIntoDailyUserStatisticsAcc(RowData *rowData,Statement *stmt,string tableName);

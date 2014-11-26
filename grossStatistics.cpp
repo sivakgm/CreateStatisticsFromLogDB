@@ -13,6 +13,8 @@
 #include "RowData.h"
 #include "RowDataDenied.h"
 #include "grossStatistics.h"
+#include "UserStatistics.h"
+#include "DomainStatistics.h"
 
 
 //void updateRowDataAcc(ResultSet *dailyRes,ResultSet *ymRes,PreparedStatement *pstmt);
@@ -29,10 +31,12 @@ void *grossStatisticsAcc(void *tbNa)
 
 	string tName;
 	ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
+	sleep(1);
+	cout<<"acccccccccccccccc";
 	confFile>>tName;
-	cout<<tName;
+	cout<<tName<<endl;
 	//cout<<"sleeping ... \n";
-//	sleep(2);
+
 	try
 	{
 	PreparedStatement *readPstmt,*inPstmt,*upPstmt;
@@ -110,7 +114,9 @@ void *grossStatisticsAcc(void *tbNa)
 	  cout << " (MySQL error code: " << e.getErrorCode();
 	  cout << ", SQLState: " << e.getSQLState() << " )" << endl;
 	}
-	cout<<"end of thread";
+	createUserStatisticsAcc(tName);
+	createDomainStatisticsAcc(tName);
+	cout<<"end of thread Acc";
 }
 
 void updateRowDataAcc(ResultSet *dailyRes,ResultSet *ymRes,PreparedStatement *pstmt)
@@ -179,11 +185,20 @@ void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tName)
 
 }
 
-/*void grossStatisticsDen(string tName)
+
+void *grossStatisticsDen(void *tbNa)
 {
+
+	//	string te = (char*)tbNa;
+	//	cout<<"Den decryption:"<<te<<endl;
+
+	string tName;
+	ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
+	confFile>>tName;
+	cout<<tName<<endl;
+
 	PreparedStatement *readPstmt,*inPstmt,*upPstmt;
 	ResultSet *dailyRes,*ymRes;
-	Statement *stmt = statLog->conn->createStatement();
 
 	string year = tName.substr(13,4);
 	string month = tName.substr(10,2);
@@ -191,6 +206,13 @@ void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tName)
 
 	string yearStatisticstable = "ud_den_"+year;
 	string monthStatisticstable = "ud_den_"+month;
+	string schema = "squidStatistics_"+year;
+
+	DBConnection *grossLog = new DBConnection();
+	grossLog->dbConnOpen("127.0.0.1","3306","root","simple",schema);
+
+	Statement *stmt = grossLog->conn->createStatement();
+
 
 	checkPresenecOfGrossStatisticsTableDen(stmt,yearStatisticstable);
 	checkPresenecOfGrossStatisticsTableDen(stmt,monthStatisticstable);
@@ -205,7 +227,7 @@ void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tName)
 	string updateYear = "update " + yearStatisticstable + " set connection=? where user=? and domain=?;";
 
 	string selectQuery = "select * from " + tName +";";
-	readPstmt = statLog->conn->prepareStatement(selectQuery);
+	readPstmt = grossLog->conn->prepareStatement(selectQuery);
 	dailyRes = readPstmt->executeQuery();
 
 
@@ -216,15 +238,15 @@ void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tName)
 		{
 			if(i ==  0)
 			{
-				readPstmt = statLog->conn->prepareStatement(searchQueryMonth);
-				inPstmt =  statLog->conn->prepareStatement(insertMonth);
-				upPstmt = statLog->conn->prepareStatement(updateMonth);
+				readPstmt = grossLog->conn->prepareStatement(searchQueryMonth);
+				inPstmt =  grossLog->conn->prepareStatement(insertMonth);
+				upPstmt = grossLog->conn->prepareStatement(updateMonth);
 			}
 			else
 			{
-				readPstmt = statLog->conn->prepareStatement(searchQueryYear);
-				inPstmt =  statLog->conn->prepareStatement(insertYear);
-				upPstmt = statLog->conn->prepareStatement(updateYear);
+				readPstmt = grossLog->conn->prepareStatement(searchQueryYear);
+				inPstmt =  grossLog->conn->prepareStatement(insertYear);
+				upPstmt = grossLog->conn->prepareStatement(updateYear);
 			}
 
 			readPstmt->setString(1,dailyRes->getString(1));
@@ -241,7 +263,9 @@ void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tName)
 			}
 		}
 	}
-
+	createUserStatisticsDen(tName);
+	createDomainStatisticsDen(tName);
+	cout<<"end of thread Den\n";
 }
 
 void updateRowDataDen(ResultSet *dailyRes,ResultSet *ymRes,PreparedStatement *pstmt)
@@ -270,4 +294,4 @@ void insertRowDataDen(ResultSet *dailyRes,PreparedStatement *pstmt)
 void checkPresenecOfGrossStatisticsTableDen(Statement *stmt,string tName)
 {
 	stmt->execute("create table if not exists " + tName + "(user varchar(12),domain varchar(100), connection int);");
-}*/
+}

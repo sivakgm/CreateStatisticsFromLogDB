@@ -30,8 +30,8 @@ void *grossStatisticsAcc(void *tbNa)
 	try
 	{
 		ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
-		sleep(1);
 		confFile>>tName;
+		confFile.close();
 		cout<<"start of Acc thread for table:"<<tName<<endl;
 
 		PreparedStatement *readPstmt,*inPstmt,*upPstmt;
@@ -99,6 +99,7 @@ void *grossStatisticsAcc(void *tbNa)
 				}
 			}
 		}
+		cout<<"ACCESSSSSSS:"<<tName<<"\n";
 		createUserStatisticsAcc(tName);
 		createDomainStatisticsAcc(tName);
 		cout<<"end of thread Acc";
@@ -195,6 +196,8 @@ void *grossStatisticsDen(void *tbNa)
 	{
 		ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
 		confFile>>tName;
+		confFile.close();
+
 		cout<<tName<<endl;
 		PreparedStatement *readPstmt,*inPstmt,*upPstmt;
 		ResultSet *dailyRes,*ymRes;

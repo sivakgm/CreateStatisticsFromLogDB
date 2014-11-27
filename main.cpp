@@ -173,32 +173,20 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 						cout<<"\n\n"<<"day:"<<day<<"\n\n";
 						ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
 						confFile<<statLog->tableNameAcc;
+						confFile.close();
 
 						ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
 						confFile1<<statLog->tableNameDen;
+						confFile1.close();
 
 						pthread_t thread[4];
 						string s = statLog->tableNameAcc;
-				//	cout<<statLog->tableNameDen<<"\n";
-//					const char *acc = s.c_str();
-				//	cout<<"main:"<<acc<<endl;
 						insertAllObjDataIntoTable(statLog);
 						insertAllDenObjDataIntoTable(statLog);
-						cout<<"starting thread for access gross statistics::::"<<temp<<"\n";
 
 						pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
 						pthread_create(&thread[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
 
-				//	pthread_create(&thread[3], NULL,createUserStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
-				//	pthread_create(&thread[4], NULL,createUserStatisticsDen,(void *)statLog->tableNameDen.c_str());
-
-
-					//	cout<<"main 1:"<<acc<<endl;
-					//createDomainStatisticsAcc(statLog->tableNameAcc);
-					//createUserStatisticsAcc(statLog->tableNameAcc);
-					//grossStatisticsDen(statLog->tableNameDen);
-					//createDomainStatisticsDen(statLog->tableNameDen);
-					//createUserStatisticsDen(statLog->tableNameDen);
 					}
 					day = logDate.substr(0,2);
 				}

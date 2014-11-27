@@ -9,7 +9,7 @@
 #include "RowData.h"
 #include "RowDataDenied.h"
 
-extern DBConnection *statLog;
+
 
 
 void createDomainStatisticsAcc(string tableName)
@@ -27,8 +27,12 @@ void createDomainStatisticsAcc(string tableName)
 	string yearStatisticstable = "d_acc_"+year;
 	string monthStatisticstable = "d_acc_"+month;
 	string dayStatisticstable = "d_acc_"+day+"_"+month+"_"+year;
+	string schema = "squidStatistics_"+year;
 
-	Statement *stmt = statLog->conn->createStatement();
+	DBConnection *grossLog = new DBConnection();
+	grossLog->dbConnOpen("127.0.0.1","3306","root","simple",schema);
+
+	Statement *stmt = grossLog->conn->createStatement();
 	string domain="";
 	RowData *rowData = new RowData();
 
@@ -36,7 +40,7 @@ void createDomainStatisticsAcc(string tableName)
 	checkPresenecOfDomainStatisticsTableAcc(stmt,monthStatisticstable);
 	checkPresenecOfDomainStatisticsTableAcc(stmt,yearStatisticstable);
 
-	readPstmt = statLog->conn->prepareStatement(domainQuery);
+	readPstmt = grossLog->conn->prepareStatement(domainQuery);
 	udStatData = readPstmt->executeQuery();
 
 	while(udStatData->next())
@@ -115,8 +119,12 @@ void createDomainStatisticsDen(string tableName)
 	string yearStatisticstable = "d_den_"+year;
 	string monthStatisticstable = "d_den_"+month;
 	string dayStatisticstable = "d_den_"+day+"_"+month+"_"+year;
+	string schema = "squidStatistics_"+year;
 
-	Statement *stmt = statLog->conn->createStatement();
+	DBConnection *grossLog = new DBConnection();
+	grossLog->dbConnOpen("127.0.0.1","3306","root","simple",schema);
+
+	Statement *stmt = grossLog->conn->createStatement();
 	string domain="";
 	RowDataDenied *rowDataDenied = new RowDataDenied();
 
@@ -124,7 +132,7 @@ void createDomainStatisticsDen(string tableName)
 	checkPresenecOfDomainStatisticsTableDen(stmt,monthStatisticstable);
 	checkPresenecOfDomainStatisticsTableDen(stmt,yearStatisticstable);
 
-	readPstmt = statLog->conn->prepareStatement(domainQuery);
+	readPstmt = grossLog->conn->prepareStatement(domainQuery);
 	udStatData = readPstmt->executeQuery();
 
 	while(udStatData->next())

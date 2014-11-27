@@ -46,9 +46,9 @@ int main()
 
 	DBConnection *squidLog = new DBConnection();
 	squidLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
-	squidLog->tableName = "access_log";
+	squidLog->tableName = "access_log_new";
 
-	string logReadQuery = "select * from access_log where id > ?;";
+	string logReadQuery = "select * from access_log_new where id > ?;";
 	PreparedStatement *pstm = squidLog->conn->prepareStatement(logReadQuery);
 	pstm->setInt(1,tabIndex);
 	squidLog->res = pstm->executeQuery();
@@ -134,6 +134,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				if(day != "")
 				{
 
+					cout<<"\n\n"<<"day:"<<day<<"\n\n";
 					ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
 					confFile<<statLog->tableNameAcc;
 
@@ -147,7 +148,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				//	cout<<"main:"<<acc<<endl;
 					insertAllObjDataIntoTable(statLog);
 					insertAllDenObjDataIntoTable(statLog);
-					cout<<"starting thread for access gross statistics\n";
+					cout<<"starting thread for access gross statistics::::"<<temp<<"\n";
 
 					pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
 					pthread_create(&thread[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());

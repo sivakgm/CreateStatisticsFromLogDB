@@ -40,18 +40,20 @@ string logDate="",year="",month="",day="";
 
 int main()
 {
-	readConfFile();
-	cout<<"Started the program\n";
+	try
+	{
+		readConfFile();
+		cout<<"Started the program\n";
 	//cout<<tabIndex;
 
-	DBConnection *squidLog = new DBConnection();
-	squidLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
-	squidLog->tableName = "access_log_new";
+		DBConnection *squidLog = new DBConnection();
+		squidLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
+		squidLog->tableName = "access_log_new";
 
-	string logReadQuery = "select * from access_log_new where id > ?;";
-	PreparedStatement *pstm = squidLog->conn->prepareStatement(logReadQuery);
-	pstm->setInt(1,tabIndex);
-	squidLog->res = pstm->executeQuery();
+		string logReadQuery = "select * from access_log_new where id > ?;";
+		PreparedStatement *pstm = squidLog->conn->prepareStatement(logReadQuery);
+		pstm->setInt(1,tabIndex);
+		squidLog->res = pstm->executeQuery();
 
 
 	/*DBConnection *squidLog = new DBConnection();
@@ -62,8 +64,8 @@ int main()
 	squidLog->readTable();*/
 
 
-	statLog = new DBConnection();
-	createStatistics(squidLog,statLog);
+		statLog = new DBConnection();
+		createStatistics(squidLog,statLog);
 
 
 	/*grossStatisticsAcc(statLog->tableNameAcc);
@@ -73,85 +75,119 @@ int main()
 	createDomainStatisticsDen(statLog->tableNameDen);
 	createUserStatisticsDen(statLog->tableNameDen);*/
 
-	writeConfFile();
-	cout<<"End Of program \n";
-	pthread_exit(NULL);
-	return 0;
+		writeConfFile();
+		cout<<"End Of program \n";
+		pthread_exit(NULL);
+	}
+	catch (sql::SQLException &e)
+	{
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERR: " << e.what();
+		cout << " (MySQL error code: " << e.getErrorCode();
+		cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+	}
+	catch (exception& e)
+	{
+		cout << "# ERR File: " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	    cout << e.what() << '\n';
+	}
+		return 0;
 }
 
 
 void readConfFile()
 {
-	ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/squ.conf");
-	confFile>>tabIndex;
+	try
+	{
+		ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/squ.conf");
+		confFile>>tabIndex;
+	}
+	catch (exception& e)
+	{
+		cout << "# ERR File: " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	    cout << e.what() << '\n';
+	}
 }
 
 void writeConfFile()
 {
-	ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/squ.conf");
-	confFile<<tabIndex;
-
+	try
+	{
+		ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/squ.conf");
+		confFile<<tabIndex;
+	}
+	catch (exception& e)
+	{
+		cout << "# ERR File: " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	    cout << e.what() << '\n';
+	}
 }
 
 void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 {
-	string user;
-	string domain;
-	int pointObj,isnewLogInTable;
-	while(squidLog->res->next())
+	try
 	{
-		user=squidLog->res->getString(6);
-		domain=parseURLtoDomain(squidLog->res->getString(11));
+		string user;
+		string domain;
+		int pointObj,isnewLogInTable;
+		while(squidLog->res->next())
+		{
+			user=squidLog->res->getString(6);
+			domain=parseURLtoDomain(squidLog->res->getString(11));
 	//	cout<<user<<"\t"<<domain<<"\n";
 
-		if(squidLog->res->getString(3) != logDate )
-		{
-
-			logDate = squidLog->res->getString(3);
-			string temp = logDate;
-			for(unsigned int x=0;x<temp.length();x++)
+			if(squidLog->res->getString(3) != logDate )
 			{
-				if(temp[x] == '-')
+
+				logDate = squidLog->res->getString(3);
+				string temp = logDate;
+				for(unsigned int x=0;x<temp.length();x++)
 				{
-					temp[x]='_';
+					if(temp[x] == '-')
+					{
+						temp[x]='_';
+					}
 				}
-			}
 
-			if(year != logDate.substr(6,4))
-			{
-							year=logDate.substr(6,4);
-							string dbName = "squidStatistics_"+year;
-							statLog->dbConnOpen("127.0.0.1","3306","root","simple",dbName);
-							statLog->createStatTable(1,year);
-			}
-			if(month != logDate.substr(3,2))
-			{
-							month = logDate.substr(3,2);
-							statLog->createStatTable(0,month);
-			}
-			if(day != logDate.substr(0,2))
-			{
-				if(day != "")
+				if(year != logDate.substr(6,4))
 				{
+					year=logDate.substr(6,4);
+					string dbName = "squidStatistics_"+year;
+					statLog->dbConnOpen("127.0.0.1","3306","root","simple",dbName);
+					statLog->createStatTable(1,year);
+				}
+				if(month != logDate.substr(3,2))
+				{
+						month = logDate.substr(3,2);
+						statLog->createStatTable(0,month);
+				}
+				if(day != logDate.substr(0,2))
+				{
+					if(day != "")
+					{
 
-					cout<<"\n\n"<<"day:"<<day<<"\n\n";
-					ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
-					confFile<<statLog->tableNameAcc;
+						cout<<"\n\n"<<"day:"<<day<<"\n\n";
+						ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
+						confFile<<statLog->tableNameAcc;
 
-					ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
-					confFile1<<statLog->tableNameDen;
+						ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
+						confFile1<<statLog->tableNameDen;
 
-					pthread_t thread[4];
-					string s = statLog->tableNameAcc;
+						pthread_t thread[4];
+						string s = statLog->tableNameAcc;
 				//	cout<<statLog->tableNameDen<<"\n";
 //					const char *acc = s.c_str();
 				//	cout<<"main:"<<acc<<endl;
-					insertAllObjDataIntoTable(statLog);
-					insertAllDenObjDataIntoTable(statLog);
-					cout<<"starting thread for access gross statistics::::"<<temp<<"\n";
+						insertAllObjDataIntoTable(statLog);
+						insertAllDenObjDataIntoTable(statLog);
+						cout<<"starting thread for access gross statistics::::"<<temp<<"\n";
 
-					pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
-					pthread_create(&thread[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
+						pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+						pthread_create(&thread[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
 
 				//	pthread_create(&thread[3], NULL,createUserStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
 				//	pthread_create(&thread[4], NULL,createUserStatisticsDen,(void *)statLog->tableNameDen.c_str());
@@ -163,93 +199,103 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					//grossStatisticsDen(statLog->tableNameDen);
 					//createDomainStatisticsDen(statLog->tableNameDen);
 					//createUserStatisticsDen(statLog->tableNameDen);
+					}
+					day = logDate.substr(0,2);
 				}
-				day = logDate.substr(0,2);
-			}
 			//sleep(2);
-			statLog->createStatTableName(temp);
-
-		}
-
-
-		if(squidLog->res->getString(7) != "TCP_DENIED")
-		{
-			pointObj = checkDataInOBJ(NoACCOBJ,user,domain);
-
-
-
-			if(pointObj != -1)
-			{
-				updateDataInObj(statLog,rowDataAcc[pointObj],squidLog->res);
+				statLog->createStatTableName(temp);
 			}
-			else
+			if(squidLog->res->getString(7) != "TCP_DENIED")
 			{
-				if(NoACCOBJ<MAXACCESSOBJ)
-				{
-					createNewObj();
-					pointObj = NoACCOBJ -1;
-				}
-				else
-				{
-					pointObj = getLeastObjPriority();
-					insertObjIntoTable(pointObj,statLog);
-					emptyTheObj(pointObj);
-				}
+				pointObj = checkDataInOBJ(NoACCOBJ,user,domain);
 
-				isnewLogInTable = checkDataInTable(statLog,statLog->tableNameAcc,user,domain);
-
-				if(isnewLogInTable == 1)
+				if(pointObj != -1)
 				{
-					updateObjFromTable(pointObj,statLog->res);
 					updateDataInObj(statLog,rowDataAcc[pointObj],squidLog->res);
 				}
 				else
 				{
-					updateDataInObj(statLog,rowDataAcc[pointObj],squidLog->res);
-				}
-			}
-		}
-		else
-		{
-			pointObj = checkDataInDenOBJ(NoDENOBJ,user,domain);
+					if(NoACCOBJ<MAXACCESSOBJ)
+					{
+						createNewObj();
+						pointObj = NoACCOBJ -1;
+					}
+					else
+					{
+						pointObj = getLeastObjPriority();
+						insertObjIntoTable(pointObj,statLog);
+						emptyTheObj(pointObj);
+					}
 
-			if(pointObj != -1)
-			{
-					updateDataInDenObj(statLog,rowDataDen[pointObj],squidLog->res);
+					isnewLogInTable = checkDataInTable(statLog,statLog->tableNameAcc,user,domain);
+
+					if(isnewLogInTable == 1)
+					{
+						updateObjFromTable(pointObj,statLog->res);
+						updateDataInObj(statLog,rowDataAcc[pointObj],squidLog->res);
+					}
+					else
+					{
+						updateDataInObj(statLog,rowDataAcc[pointObj],squidLog->res);
+					}
+				}
 			}
 			else
 			{
-				if(NoDENOBJ<MAXDENIEDOBJ)
-				{
-					createNewDenObj();
-					pointObj = NoDENOBJ -1;
-				}
-				else
-				{
-					pointObj = getLeastDenObjPriority();
-					insertDenObjIntoTable(pointObj,statLog);
-					emptyTheDenObj(pointObj);
-				}
+				pointObj = checkDataInDenOBJ(NoDENOBJ,user,domain);
 
-				isnewLogInTable = checkDataInTable(statLog,statLog->tableNameDen,user,domain);
-
-				if(isnewLogInTable == 1)
+				if(pointObj != -1)
 				{
-					updateDenObjFromTable(pointObj,statLog->res);
 					updateDataInDenObj(statLog,rowDataDen[pointObj],squidLog->res);
 				}
 				else
 				{
-					updateDataInDenObj(statLog,rowDataDen[pointObj],squidLog->res);
+					if(NoDENOBJ<MAXDENIEDOBJ)
+					{
+						createNewDenObj();
+						pointObj = NoDENOBJ -1;
+					}
+					else
+					{
+						pointObj = getLeastDenObjPriority();
+						insertDenObjIntoTable(pointObj,statLog);
+						emptyTheDenObj(pointObj);
+					}
+
+					isnewLogInTable = checkDataInTable(statLog,statLog->tableNameDen,user,domain);
+
+					if(isnewLogInTable == 1)
+					{
+						updateDenObjFromTable(pointObj,statLog->res);
+						updateDataInDenObj(statLog,rowDataDen[pointObj],squidLog->res);
+					}
+					else
+					{
+						updateDataInDenObj(statLog,rowDataDen[pointObj],squidLog->res);
+					}
 				}
 			}
+			tabIndex = squidLog->res->getInt(1);
 		}
-		tabIndex = squidLog->res->getInt(1);
-	}
 
 //	cout<<"ma\n";
-	insertAllObjDataIntoTable(statLog);
-	insertAllDenObjDataIntoTable(statLog);
+		insertAllObjDataIntoTable(statLog);
+		insertAllDenObjDataIntoTable(statLog);
+	}
+	catch (sql::SQLException &e)
+	{
+		cout << "# ERR: SQLException in " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+		cout << "# ERR: " << e.what();
+		cout << " (MySQL error code: " << e.getErrorCode();
+		cout << ", SQLState: " << e.getSQLState() << " )" << endl;
+	}
+	catch (exception& e)
+	{
+		cout << "# ERR File: " << __FILE__;
+		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
+	    cout << e.what() << '\n';
+	}
 
 }
 

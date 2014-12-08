@@ -154,6 +154,31 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					}
 				}
 
+				//Checking whether the lastly generated date in squ.conf is at present date
+
+				if( dd != temp && dd != "a")
+				{
+					pthread_t lastDay[2];
+					cout<<"Entering day log";
+
+					string oldtn = "ud_acc_"+dd;
+					ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
+					confFile<<oldtn;
+					confFile.close();
+					pthread_create(&lastDay[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+
+					oldtn = "ud_den_"+dd;
+					ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
+					confFile1<<oldtn;
+					confFile1.close();
+					pthread_create(&lastDay[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
+
+
+
+				}
+
+
+
 				if(year != logDate.substr(6,4))
 				{
 					year=logDate.substr(6,4);
@@ -171,22 +196,25 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					if(day != "")
 					{
 
-						cout<<"\n\n"<<"day:"<<day<<"\n\n";
+						insertAllObjDataIntoTable(statLog);
+						pthread_t thread[2];
+						//cout<<"\n\n"<<"day:"<<day<<"\n\n";
 						ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
 						confFile<<statLog->tableNameAcc;
 						confFile.close();
+						pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+
+						insertAllDenObjDataIntoTable(statLog);
 
 						ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
 						confFile1<<statLog->tableNameDen;
 						confFile1.close();
-
-						pthread_t thread[4];
-						string s = statLog->tableNameAcc;
-						insertAllObjDataIntoTable(statLog);
-						insertAllDenObjDataIntoTable(statLog);
-
-						pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
 						pthread_create(&thread[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
+
+
+
+
+
 
 					}
 					day = logDate.substr(0,2);

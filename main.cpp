@@ -27,7 +27,8 @@ int NoDENOBJ;
 const int MAXACCESSOBJ = 20;
 int NoACCOBJ;
 
-unsigned long int tabIndex ;
+unsigned long int tabIndex;
+string dd;
 
 
 RowDataDenied *rowDataDen[MAXDENIEDOBJ];
@@ -44,11 +45,10 @@ int main()
 	{
 		readConfFile();
 		cout<<"Started the program\n";
-	//cout<<tabIndex;
+		//cout<<tabIndex;
 
 		DBConnection *squidLog = new DBConnection();
 		squidLog->dbConnOpen("127.0.0.1","3306","root","simple","squid");
-		squidLog->tableName = "access_log_new";
 
 		string logReadQuery = "select * from access_log_new where id > ?;";
 		PreparedStatement *pstm = squidLog->conn->prepareStatement(logReadQuery);
@@ -102,7 +102,7 @@ void readConfFile()
 	try
 	{
 		ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/squ.conf");
-		confFile>>tabIndex;
+		confFile>>tabIndex>>dd;
 	}
 	catch (exception& e)
 	{
@@ -117,7 +117,7 @@ void writeConfFile()
 	try
 	{
 		ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/squ.conf");
-		confFile<<tabIndex;
+		confFile<<tabIndex<<"\t"<<dd;
 	}
 	catch (exception& e)
 	{
@@ -133,6 +133,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 	{
 		string user;
 		string domain;
+		string temp ;
 		int pointObj,isnewLogInTable;
 		while(squidLog->res->next())
 		{
@@ -144,7 +145,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 			{
 
 				logDate = squidLog->res->getString(3);
-				string temp = logDate;
+				temp = logDate;
 				for(unsigned int x=0;x<temp.length();x++)
 				{
 					if(temp[x] == '-')
@@ -264,6 +265,7 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				}
 			}
 			tabIndex = squidLog->res->getInt(1);
+			dd = temp;
 		}
 
 //	cout<<"ma\n";

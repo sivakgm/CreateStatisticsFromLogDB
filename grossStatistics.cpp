@@ -118,6 +118,7 @@ void *grossStatisticsAcc(void *tbNa)
 		cout << "(" << __FUNCTION__ << ") on line " << __LINE__ << endl;
 	    cout << e.what() << '\n';
 	}
+
 }
 
 void updateRowDataAcc(ResultSet *dailyRes,ResultSet *ymRes,PreparedStatement *pstmt)

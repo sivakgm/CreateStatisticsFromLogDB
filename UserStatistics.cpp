@@ -22,6 +22,7 @@ void createUserStatisticsAcc(string tableName)
 		PreparedStatement *readPstmt;
 		ResultSet *udStatData;
 
+		cout<<"User statistics";
 
 		string year = tableName.substr(13,4);
 		string month = tableName.substr(10,2);
@@ -49,6 +50,7 @@ void createUserStatisticsAcc(string tableName)
 
 		while(udStatData->next())
 		{
+			cout<<"inside user statistics loop";
 			if(udStatData->getString(1) == user)
 			{
 				rowData->size = rowData->size + udStatData->getDouble(3);
@@ -63,6 +65,7 @@ void createUserStatisticsAcc(string tableName)
 				{
 					insertDataIntoDailyUserStatisticsAcc(rowData,stmt,dayStatisticstable);
 					checkPresenceOfUserDataInTableAcc(rowData,stmt,monthStatisticstable);
+
 					checkPresenceOfUserDataInTableAcc(rowData,stmt,yearStatisticstable);
 				}
 				user = udStatData->getString(1);
@@ -78,6 +81,8 @@ void createUserStatisticsAcc(string tableName)
 		insertDataIntoDailyUserStatisticsAcc(rowData,stmt,dayStatisticstable);
 		checkPresenceOfUserDataInTableAcc(rowData,stmt,monthStatisticstable);
 		checkPresenceOfUserDataInTableAcc(rowData,stmt,yearStatisticstable);
+
+		cout<<"end of user statistics";
 	}
 	catch (sql::SQLException &e)
 	{
@@ -110,14 +115,23 @@ void checkPresenceOfUserDataInTableAcc(RowData *rowData,Statement *stmt,string t
 	try
 	{
 		ResultSet *res = stmt->executeQuery("select * from "+tableName+" where user='"+rowData->user+"';");
+
+
 		if(res->next())
 		{
-			rowData->size = rowData->size + res->getDouble(2);
-			rowData->connection = rowData->connection + res->getInt(3);
-			rowData->hit = rowData->hit + res->getDouble(4);
-			rowData->miss = rowData->miss + res->getDouble(5);
-			rowData->response_time = rowData->response_time + res->getDouble(6);
-			stmt->execute("update "+ tableName +" set size="+boost::lexical_cast<std::string>(rowData->size)+",connection=" + boost::lexical_cast<std::string>(rowData->connection) + ",hit="+ boost::lexical_cast<std::string>(rowData->hit) + ",miss=" + boost::lexical_cast<std::string>(rowData->miss) + ",response_time=" + boost::lexical_cast<std::string>(rowData->response_time) + " where user='" + rowData->user + "';");
+			cout<<"\n\n******"<<tableName<<"**********\n\n";
+
+			RowData *temp = new RowData();
+			temp->size = rowData->size + res->getDouble(2);
+			cout<<temp->size<<"\t"<<rowData->size<<"\t"<<res->getDouble(2);
+			temp->connection = rowData->connection + res->getInt(3);
+			//temp->hit = rowData->hit + res->getDouble(4);
+			temp->hit = 8686 +  res->getDouble(4);;
+			temp->miss = rowData->miss + res->getDouble(5);
+			temp->response_time = rowData->response_time + res->getDouble(6);
+			//****************************************************
+			stmt->execute("update "+ tableName +" set size="+boost::lexical_cast<std::string>(temp->size)+",connection=" + boost::lexical_cast<std::string>(temp->connection) + ",hit="+ boost::lexical_cast<std::string>(temp->hit) + ",miss=" + boost::lexical_cast<std::string>(temp->miss) + ",response_time=" + boost::lexical_cast<std::string>(temp->response_time) + " where user='" + rowData->user + "';");
+			//********************************************************
 		}
 		else
 		{
@@ -238,10 +252,12 @@ void checkPresenceOfUserDataInTableDen(RowDataDenied *rowDataDenied,Statement *s
 	try
 	{
 		ResultSet *res = stmt->executeQuery("select * from "+tableName+" where user='"+rowDataDenied->user+"';");
+
 		if(res->next())
 		{
-			rowDataDenied->connection = rowDataDenied->connection + res->getInt(2);
-			stmt->execute("update "+tableName+" set connection="+boost::lexical_cast<std::string>(rowDataDenied->connection)+" where user='"+rowDataDenied->user+"';");
+			RowDataDenied *temp = new RowDataDenied();
+			temp->connection = rowDataDenied->connection + res->getInt(2);
+			stmt->execute("update "+tableName+" set connection="+boost::lexical_cast<std::string>(temp->connection)+" where user='"+rowDataDenied->user+"';");
 		}
 		else
 		{

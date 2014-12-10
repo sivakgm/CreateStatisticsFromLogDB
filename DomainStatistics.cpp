@@ -105,12 +105,13 @@ void checkPresenceOfDomainDataInTableAcc(RowData *rowData,Statement *stmt,string
 		ResultSet *res = stmt->executeQuery("select * from "+tableName+" where domain='"+rowData->domain+"';");
 		if(res->next())
 		{
-			rowData->size = rowData->size + res->getDouble(2);
-			rowData->connection = rowData->connection + res->getInt(3);
-			rowData->hit = rowData->hit + res->getDouble(4);
-			rowData->miss = rowData->miss + res->getDouble(5);
-			rowData->response_time = rowData->response_time + res->getDouble(6);
-			stmt->executeUpdate("update "+tableName+" set size="+boost::lexical_cast<std::string>(rowData->size)+",connection=" + boost::lexical_cast<std::string>(rowData->connection) + ",hit="+ boost::lexical_cast<std::string>(rowData->hit) + ",miss=" + boost::lexical_cast<std::string>(rowData->miss) + ",response_time=" + boost::lexical_cast<std::string>(rowData->response_time) + " where domain='" + rowData->domain + "';");
+			RowData *temp = new RowData();
+			temp->size = rowData->size + res->getDouble(2);
+			temp->connection = rowData->connection + res->getInt(3);
+			temp->hit = rowData->hit + res->getDouble(4);
+			temp->miss = rowData->miss + res->getDouble(5);
+			temp->response_time = rowData->response_time + res->getDouble(6);
+			stmt->executeUpdate("update "+tableName+" set size="+boost::lexical_cast<std::string>(temp->size)+",connection=" + boost::lexical_cast<std::string>(temp->connection) + ",hit="+ boost::lexical_cast<std::string>(temp->hit) + ",miss=" + boost::lexical_cast<std::string>(temp->miss) + ",response_time=" + boost::lexical_cast<std::string>(temp->response_time) + " where domain='" + rowData->domain + "';");
 		}
 		else
 		{
@@ -238,8 +239,9 @@ void checkPresenceOfDomainDataInTableDen(RowDataDenied *rowDataDenied,Statement 
 		ResultSet *res = stmt->executeQuery("select * from "+tableName+" where domain='"+rowDataDenied->domain+"';");
 		if(res->next())
 		{
-			rowDataDenied->connection = rowDataDenied->connection + res->getInt(2);
-			stmt->executeUpdate("update "+tableName+" set connection="+boost::lexical_cast<std::string>(rowDataDenied->connection)+" where domain='"+rowDataDenied->domain+"' ;");
+			RowDataDenied *temp = new RowDataDenied();
+			temp->connection = rowDataDenied->connection + res->getInt(2);
+			stmt->executeUpdate("update "+tableName+" set connection="+boost::lexical_cast<std::string>(temp->connection)+" where domain='"+rowDataDenied->domain+"' ;");
 		}
 		else
 		{

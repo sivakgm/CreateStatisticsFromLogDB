@@ -29,6 +29,7 @@ int NoACCOBJ;
 
 unsigned long int tabIndex;
 string dd;
+static int startFlag = 1;
 
 
 RowDataDenied *rowDataDen[MAXDENIEDOBJ];
@@ -156,8 +157,11 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 
 				//Checking whether the lastly generated date in squ.conf is at present date
 
-				if( dd != temp && dd != "a")
+				if((dd != temp && dd != "a") && startFlag == 1)
 				{
+
+					startFlag = 0;
+
 					pthread_t lastDay[2];
 					cout<<"Entering day log";
 
@@ -172,8 +176,6 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					confFile1<<oldtn;
 					confFile1.close();
 					pthread_create(&lastDay[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
-
-
 
 				}
 

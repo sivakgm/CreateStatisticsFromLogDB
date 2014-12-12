@@ -79,7 +79,7 @@ void createUserStatisticsAcc(string tableName)
 		checkPresenceOfUserDataInTableAcc(rowData,stmt,monthStatisticstable);
 		checkPresenceOfUserDataInTableAcc(rowData,stmt,yearStatisticstable);
 
-		cout<<"end of user statistics";
+
 	}
 	catch (sql::SQLException &e)
 	{
@@ -119,7 +119,6 @@ void checkPresenceOfUserDataInTableAcc(RowData *rowData,Statement *stmt,string t
 
 			RowData *temp = new RowData();
 			temp->size = rowData->size + res->getDouble(2);
-			cout<<temp->size<<"\t"<<rowData->size<<"\t"<<res->getDouble(2);
 			temp->connection = rowData->connection + res->getInt(3);
 			temp->hit = rowData->hit + res->getDouble(4);
 			temp->miss = rowData->miss + res->getDouble(5);

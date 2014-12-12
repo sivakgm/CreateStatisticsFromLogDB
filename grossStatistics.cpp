@@ -24,15 +24,20 @@
 //void insertRowDataDen(ResultSet *ymRes,PreparedStatement *pstmt);
 
 
-void *grossStatisticsAcc(void *tbNa)
+//void *grossStatisticsAcc(void *tbNa)
+void grossStatisticsAcc(string tbNa)
 {
-	string tName;
+	string tName = tbNa;
+
+	cout<<"";
+
+
 	try
 	{
-		ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
+	/*	ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
 		confFile>>tName;
 		confFile.close();
-		cout<<"start of Acc thread for table:"<<tName<<endl;
+		cout<<"start of Acc thread for table:"<<tName<<endl;*/
 
 		PreparedStatement *readPstmt,*inPstmt,*upPstmt;
 		ResultSet *dailyRes,*ymRes;
@@ -99,10 +104,8 @@ void *grossStatisticsAcc(void *tbNa)
 				}
 			}
 		}
-		cout<<"ACCESSSSSSS:"<<tName<<"\n";
 		createUserStatisticsAcc(tName);
 		createDomainStatisticsAcc(tName);
-		cout<<"end of thread Acc";
 	}
 	catch (sql::SQLException &e)
 	{
@@ -187,32 +190,27 @@ void checkPresenecOfGrossStatisticsTableAcc(Statement *stmt,string tName)
 }
 
 
-void *grossStatisticsDen(void *tbNa)
+//void *grossStatisticsDen(void *tbNa)
+void grossStatisticsDen(string tbNa)
 {
 
 	//	string te = (char*)tbNa;
 	//	cout<<"Den decryption:"<<te<<endl;
-	string tName;
+	string tName = tbNa;
 	try
 	{
-		ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
+	/*	ifstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
 		confFile>>tName;
-		confFile.close();
+		confFile.close();*/
 
-		cout<<tName<<endl;
+
 		PreparedStatement *readPstmt,*inPstmt,*upPstmt;
 		ResultSet *dailyRes,*ymRes;
 
-		cout<<"start for parsing denined \n";
-
 		string year = tName.substr(13,4);
-		cout<<"1\n";
 		string month = tName.substr(10,2);
-		cout<<"2\n";
 		string day = tName.substr(7,2);
-		cout<<"3\n";
 
-		cout<<"end for parsing denined \n";
 
 		string yearStatisticstable = "ud_den_"+year;
 		string monthStatisticstable = "ud_den_"+month;
@@ -275,7 +273,7 @@ void *grossStatisticsDen(void *tbNa)
 		}
 		createUserStatisticsDen(tName);
 		createDomainStatisticsDen(tName);
-		cout<<"end of thread Den\n";
+
 	}
 	catch (sql::SQLException &e)
 	{

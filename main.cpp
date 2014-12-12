@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <cstdlib>
+#include <thread>
 #include <pthread.h>
 
 #include "DBConnection.h"
@@ -16,6 +17,8 @@
 #include "grossStatistics.h"
 #include "DomainStatistics.h"
 #include "UserStatistics.h"
+
+#include <time.h>
 
 void createStatistics(DBConnection *,DBConnection *);
 void readConfFile();
@@ -44,6 +47,8 @@ int main()
 {
 	try
 	{
+		clock_t tStart = clock();
+
 		readConfFile();
 		cout<<"Started the program\n";
 		//cout<<tabIndex;
@@ -77,8 +82,9 @@ int main()
 	createUserStatisticsDen(statLog->tableNameDen);*/
 
 		writeConfFile();
+		printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 		cout<<"End Of program \n";
-		pthread_exit(NULL);
+
 	}
 	catch (sql::SQLException &e)
 	{
@@ -165,20 +171,29 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 					pthread_t lastDay[2];
 					cout<<"Entering day log";
 
-					string oldtn = "ud_acc_"+dd;
+				/*	string oldtn = "ud_acc_"+dd;
 					ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
 					confFile<<oldtn;
 					confFile.close();
-					pthread_create(&lastDay[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+					pthread_create(&lastDay[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());*/
+
+					cout<<"\n\nflag\n\n";
+					string oldtn = "ud_acc_"+dd;
+					thread t1(grossStatisticsAcc,oldtn);
+					//t1.join();
+					t1.detach();
 
 					oldtn = "ud_den_"+dd;
-					ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
+					thread t2(grossStatisticsDen,oldtn);
+					//t2.join();
+					t2.detach();
+					/*ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
 					confFile1<<oldtn;
 					confFile1.close();
-					pthread_create(&lastDay[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
+					pthread_create(&lastDay[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());*/
 
 				}
-
+				startFlag = 0;
 
 
 				if(year != logDate.substr(6,4))
@@ -197,24 +212,34 @@ void createStatistics(DBConnection *squidLog,DBConnection *statLog)
 				{
 					if(day != "")
 					{
+						string tttt = statLog->tableNameAcc;
+
+						cout<<"\n\nchange date"<<tttt<<"\n\n";
 
 						insertAllObjDataIntoTable(statLog);
-						pthread_t thread[2];
+						pthread_t thread1[2];
 						//cout<<"\n\n"<<"day:"<<day<<"\n\n";
-						ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
+					/*  ofstream confFile("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabAcc.conf");
 						confFile<<statLog->tableNameAcc;
 						confFile.close();
-						pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());
+						pthread_create(&thread[0], NULL,grossStatisticsAcc,(void *)statLog->tableNameAcc.c_str());*/
+
+
+						thread t1(grossStatisticsAcc,tttt);
+						//t1.join();
+						t1.detach();
 
 						insertAllDenObjDataIntoTable(statLog);
 
-						ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
+						tttt = statLog->tableNameDen;;
+						thread t2(grossStatisticsDen,tttt);
+						//t2.join();
+						t2.detach();
+
+						/*ofstream confFile1("/home/sivaprakash/workspace/StatisticsDataFromDB/src/tabDen.conf");
 						confFile1<<statLog->tableNameDen;
 						confFile1.close();
-						pthread_create(&thread[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());
-
-
-
+						pthread_create(&thread1[1], NULL,grossStatisticsDen,(void *)statLog->tableNameDen.c_str());*/
 
 
 
